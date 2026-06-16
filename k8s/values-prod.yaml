@@ -2,9 +2,13 @@ environment: prod
 
 backend:
   replicas: 3
+  image:
+    tag: prod-stable
 
 frontend:
   replicas: 3
+  image:
+    tag: prod-stable
 
 postgres:
   enabled: false

@@ -2,9 +2,13 @@ environment: staging
 
 backend:
   replicas: 2
+  image:
+    tag: staging-stable
 
 frontend:
   replicas: 2
+  image:
+    tag: staging-stable
 
 postgres:
   enabled: false

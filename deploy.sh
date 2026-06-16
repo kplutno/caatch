@@ -9,7 +9,11 @@ if [ ! -f "$VALUES_FILE" ]; then
   exit 1
 fi
 
-TAG=$(date +%s)
+if [ "$ENV" = "dev" ]; then
+  TAG="latest"
+else
+  TAG=${2:-$(date +%s)}
+fi
 
 # Build backend
 echo "Building backend image for environment: $ENV..."
