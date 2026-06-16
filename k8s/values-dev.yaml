@@ -1,0 +1,11 @@
+environment: dev
+
+backend:
+  replicas: 1
+
+frontend:
+  replicas: 1
+
+postgres:
+  storage:
+    size: 1Gi

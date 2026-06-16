@@ -1,0 +1,34 @@
+environment: dev
+
+backend:
+  replicas: 1
+  image:
+    repository: caatch-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 8000
+
+frontend:
+  replicas: 1
+  image:
+    repository: caatch-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 3000
+
+postgres:
+  enabled: true
+  host: ""
+  port: 5432
+  image:
+    repository: postgres
+    tag: 18-alpine
+  storage:
+    size: 1Gi
+  user: postgres
+  password: postgres
+  database: caatch

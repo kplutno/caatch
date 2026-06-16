@@ -1,0 +1,15 @@
+environment: staging
+
+backend:
+  replicas: 2
+
+frontend:
+  replicas: 2
+
+postgres:
+  enabled: false
+  host: postgres-staging.example.com
+  port: 5432
+  user: postgres_user
+  password: postgres_password
+  database: caatch_staging

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "caatch.fullname" . }}-backend
+  labels:
+    {{- include "caatch.labels" . | nindent 4 }}
+    app: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "caatch.selectorLabels" . | nindent 6 }}
+      app: backend
+  template:
+    metadata:
+      labels:
+        {{- include "caatch.selectorLabels" . | nindent 8 }}
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.backend.service.port }}
+        env:
+        - name: ENVIRONMENT
+          value: {{ .Values.environment | quote }}
+        - name: DATABASE_URL
+          value: "postgresql+asyncpg://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ default (printf "%s-postgres" (include "caatch.fullname" .)) .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.database }}"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: {{ .Values.backend.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "caatch.fullname" . }}-backend
+  labels:
+    {{- include "caatch.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.backend.service.type }}
+  ports:
+  - port: {{ .Values.backend.service.port }}
+    targetPort: {{ .Values.backend.service.port }}
+  selector:
+    {{- include "caatch.selectorLabels" . | nindent 4 }}
+    app: backend

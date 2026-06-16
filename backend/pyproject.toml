@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "caatch-backend"
+version = "1.0.0"
+description = "Caatch backend service"
+authors = []
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "0.115.12"
+uvicorn = {version = "0.34.3", extras = ["standard"]}
+pytest = "^9.1.0"
+sqlmodel = "^0.0.38"
+alembic = "^1.18.4"
+asyncpg = "^0.31.0"
+greenlet = "^3.5.1"
+email-validator = "^2.3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.1.0"
+httpx = "^0.28.1"
+pytest-asyncio = "^1.4.0"
+aiosqlite = "^0.22.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

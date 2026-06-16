@@ -1,0 +1,15 @@
+environment: prod
+
+backend:
+  replicas: 3
+
+frontend:
+  replicas: 3
+
+postgres:
+  enabled: false
+  host: postgres-prod.example.com
+  port: 5432
+  user: postgres_user
+  password: postgres_password
+  database: caatch_prod
