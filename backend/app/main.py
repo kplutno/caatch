@@ -150,6 +150,7 @@ async def delete_entity(
 @app.get("/api/connections/rules")
 async def get_connection_rules():
     from app.models import ALLOWED_CONNECTIONS
+
     # Format rules nicely for the frontend: source_type -> label -> list of target_types
     return ALLOWED_CONNECTIONS
 
@@ -168,18 +169,19 @@ async def create_connection(
 
     # Perform connection validation based on entity types and connection label
     from app.models import ALLOWED_CONNECTIONS
+
     source_rules = ALLOWED_CONNECTIONS.get(source.type)
     if not source_rules or connection.label not in source_rules:
         raise HTTPException(
             status_code=400,
-            detail=f"Connections of type '{connection.label}' are not allowed originating from a '{source.type}' entity."
+            detail=f"Connections of type '{connection.label}' are not allowed originating from a '{source.type}' entity.",
         )
 
     allowed_targets = source_rules[connection.label]
     if target.type not in allowed_targets:
         raise HTTPException(
             status_code=400,
-            detail=f"Connections of type '{connection.label}' from '{source.type}' to '{target.type}' are not allowed. Allowed targets: {', '.join([t.value for t in allowed_targets])}."
+            detail=f"Connections of type '{connection.label}' from '{source.type}' to '{target.type}' are not allowed. Allowed targets: {', '.join([t.value for t in allowed_targets])}.",
         )
 
     db_connection = Connection.model_validate(connection)

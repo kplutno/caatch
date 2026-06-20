@@ -240,11 +240,15 @@ async def test_get_connection_rules(client: AsyncClient):
 
 async def test_connection_validation_rules(client: AsyncClient):
     # Create person
-    person_resp = await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    person_resp = await client.post(
+        "/api/entities", json={"name": "Alice", "type": "person"}
+    )
     p_id = person_resp.json()["id"]
 
     # Create place
-    place_resp = await client.post("/api/entities", json={"name": "Paris", "type": "place"})
+    place_resp = await client.post(
+        "/api/entities", json={"name": "Paris", "type": "place"}
+    )
     pl_id = place_resp.json()["id"]
 
     # 1. Valid link: person LIVES_IN place
@@ -252,19 +256,21 @@ async def test_connection_validation_rules(client: AsyncClient):
         "source_id": p_id,
         "target_id": pl_id,
         "label": "LIVES_IN",
-        "properties": {}
+        "properties": {},
     }
     resp = await client.post("/api/connections", json=valid_conn)
     assert resp.status_code == 200
 
     # 2. Invalid link: person LIVES_IN person (disallowed target type)
-    person2_resp = await client.post("/api/entities", json={"name": "Bob", "type": "person"})
+    person2_resp = await client.post(
+        "/api/entities", json={"name": "Bob", "type": "person"}
+    )
     p2_id = person2_resp.json()["id"]
     invalid_conn = {
         "source_id": p_id,
         "target_id": p2_id,
         "label": "LIVES_IN",
-        "properties": {}
+        "properties": {},
     }
     resp = await client.post("/api/connections", json=invalid_conn)
     assert resp.status_code == 400
@@ -272,6 +278,7 @@ async def test_connection_validation_rules(client: AsyncClient):
 
 
 # --- New coverage tests ---
+
 
 async def test_greet_endpoint(client: AsyncClient):
     resp = await client.get("/api/greet?name=Gemini")
@@ -318,20 +325,26 @@ async def test_delete_nonexistent_entity(client: AsyncClient):
 
 async def test_ego_network_multidegree(client: AsyncClient):
     # Setup chain: Person A -> Org B -> Place C
-    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
-    e2 = (await client.post("/api/entities", json={"name": "Org X", "type": "organization"})).json()
-    e3 = (await client.post("/api/entities", json={"name": "Location Y", "type": "place"})).json()
+    e1 = (
+        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    ).json()
+    e2 = (
+        await client.post(
+            "/api/entities", json={"name": "Org X", "type": "organization"}
+        )
+    ).json()
+    e3 = (
+        await client.post("/api/entities", json={"name": "Location Y", "type": "place"})
+    ).json()
 
-    await client.post("/api/connections", json={
-        "source_id": e1["id"],
-        "target_id": e2["id"],
-        "label": "MEMBER_OF"
-    })
-    await client.post("/api/connections", json={
-        "source_id": e2["id"],
-        "target_id": e3["id"],
-        "label": "LOCATED_IN"
-    })
+    await client.post(
+        "/api/connections",
+        json={"source_id": e1["id"], "target_id": e2["id"], "label": "MEMBER_OF"},
+    )
+    await client.post(
+        "/api/connections",
+        json={"source_id": e2["id"], "target_id": e3["id"], "label": "LOCATED_IN"},
+    )
 
     # Depth 1: Should only return Alice and Org X
     resp1 = await client.get(f"/api/entities/{e1['id']}/network?depth=1")
@@ -358,15 +371,21 @@ async def test_get_full_graph(client: AsyncClient):
 
 
 async def test_connection_invalid_labels(client: AsyncClient):
-    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
-    e2 = (await client.post("/api/entities", json={"name": "Org X", "type": "organization"})).json()
-    
+    e1 = (
+        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    ).json()
+    e2 = (
+        await client.post(
+            "/api/entities", json={"name": "Org X", "type": "organization"}
+        )
+    ).json()
+
     # Try invalid connection label from person to organization
     invalid_conn = {
         "source_id": e1["id"],
         "target_id": e2["id"],
         "label": "LOCATED_IN",  # Person cannot LOCATED_IN an Organization
-        "properties": {}
+        "properties": {},
     }
     resp = await client.post("/api/connections", json=invalid_conn)
     assert resp.status_code == 400
@@ -374,6 +393,7 @@ async def test_connection_invalid_labels(client: AsyncClient):
 
 async def test_database_get_session_direct():
     from app.database import get_session
+
     async for session in get_session():
         assert session is not None
         break
@@ -381,13 +401,18 @@ async def test_database_get_session_direct():
 
 async def test_delete_connection_success(client: AsyncClient):
     # Setup connection
-    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
-    e2 = (await client.post("/api/entities", json={"name": "Paris", "type": "place"})).json()
-    conn = (await client.post("/api/connections", json={
-        "source_id": e1["id"],
-        "target_id": e2["id"],
-        "label": "LIVES_IN"
-    })).json()
+    e1 = (
+        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    ).json()
+    e2 = (
+        await client.post("/api/entities", json={"name": "Paris", "type": "place"})
+    ).json()
+    conn = (
+        await client.post(
+            "/api/connections",
+            json={"source_id": e1["id"], "target_id": e2["id"], "label": "LIVES_IN"},
+        )
+    ).json()
 
     # Delete connection
     resp = await client.delete(f"/api/connections/{conn['id']}")
@@ -396,8 +421,10 @@ async def test_delete_connection_success(client: AsyncClient):
 
 
 async def test_get_entity_network_empty_and_valid(client: AsyncClient):
-    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
-    
+    e1 = (
+        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    ).json()
+
     # Ego network for entity with no connections
     resp = await client.get(f"/api/entities/{e1['id']}/network?depth=1")
     assert resp.status_code == 200
@@ -405,6 +432,3 @@ async def test_get_entity_network_empty_and_valid(client: AsyncClient):
     assert len(data["nodes"]) == 1
     assert data["nodes"][0]["id"] == e1["id"]
     assert len(data["edges"]) == 0
-
-
-

@@ -36,25 +36,54 @@ ALLOWED_CONNECTIONS = {
         ConnectionLabel.MEMBER_OF: [EntityType.organization],
         ConnectionLabel.ATTENDED: [EntityType.event],
         ConnectionLabel.PARTICIPATED_IN: [EntityType.event],
-        ConnectionLabel.OTHER: [EntityType.person, EntityType.event, EntityType.place, EntityType.organization, EntityType.other]
+        ConnectionLabel.OTHER: [
+            EntityType.person,
+            EntityType.event,
+            EntityType.place,
+            EntityType.organization,
+            EntityType.other,
+        ],
     },
     EntityType.organization: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [EntityType.person, EntityType.event, EntityType.place, EntityType.organization, EntityType.other]
+        ConnectionLabel.OTHER: [
+            EntityType.person,
+            EntityType.event,
+            EntityType.place,
+            EntityType.organization,
+            EntityType.other,
+        ],
     },
     EntityType.event: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [EntityType.person, EntityType.event, EntityType.place, EntityType.organization, EntityType.other]
+        ConnectionLabel.OTHER: [
+            EntityType.person,
+            EntityType.event,
+            EntityType.place,
+            EntityType.organization,
+            EntityType.other,
+        ],
     },
     EntityType.place: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [EntityType.person, EntityType.event, EntityType.place, EntityType.organization, EntityType.other]
+        ConnectionLabel.OTHER: [
+            EntityType.person,
+            EntityType.event,
+            EntityType.place,
+            EntityType.organization,
+            EntityType.other,
+        ],
     },
     EntityType.other: {
-        ConnectionLabel.OTHER: [EntityType.person, EntityType.event, EntityType.place, EntityType.organization, EntityType.other]
-    }
+        ConnectionLabel.OTHER: [
+            EntityType.person,
+            EntityType.event,
+            EntityType.place,
+            EntityType.organization,
+            EntityType.other,
+        ]
+    },
 }
-
 
 
 # --- Users (Legacy/Admin) ---
