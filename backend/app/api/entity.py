@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, func
 import uuid
-from typing import List, Optional
+import math
+from typing import Optional
 
 from app.database import get_session
-from app.models import Entity, EntityCreate, EntityRead, Connection
+from app.models import Entity, EntityCreate, EntityRead, Connection, PaginatedResponse
 
 router = APIRouter(prefix="/api/entities")
 
@@ -19,15 +20,33 @@ async def create_entity(
     await session.refresh(db_entity)
     return db_entity
 
-@router.get("", response_model=List[EntityRead])
+@router.get("", response_model=PaginatedResponse[EntityRead])
 async def read_entities(
-    type: Optional[str] = None, session: AsyncSession = Depends(get_session)
+    type: Optional[str] = None,
+    page: int = Query(default=1, ge=1, description="1-based page number"),
+    page_size: int = Query(default=20, ge=1, le=200, description="Items per page"),
+    session: AsyncSession = Depends(get_session),
 ):
     statement = select(Entity)
+    count_statement = select(func.count()).select_from(Entity)
+
     if type:
         statement = statement.where(Entity.type == type)
+        count_statement = count_statement.where(Entity.type == type)
+
+    total = (await session.exec(count_statement)).one()
+    total_pages = max(1, math.ceil(total / page_size))
+
+    statement = statement.offset((page - 1) * page_size).limit(page_size)
     result = await session.exec(statement)
-    return result.all()
+
+    return PaginatedResponse(
+        items=result.all(),
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 @router.get("/{entity_id}", response_model=EntityRead)
 async def read_entity(

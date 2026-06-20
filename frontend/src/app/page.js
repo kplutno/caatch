@@ -14,10 +14,11 @@ export default function Home() {
 
   // Core data states
   const [entities, setEntities] = useState([]);
-  const [connections, setConnections] = useState([]);
   const [focusEntityId, setFocusEntityId] = useState(null);
   const [focusNetwork, setFocusNetwork] = useState({ nodes: [], edges: [] });
   const [depth, setDepth] = useState(2);
+  // Bumped on every mutation so paginated child components know to refetch
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Loading and Error states
   const [isLoading, setIsLoading] = useState(false);
@@ -43,14 +44,13 @@ export default function Home() {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const [entitiesRes, connectionsRes, rulesRes, healthRes] = await Promise.all([
-        fetch(`${API_URL}/api/entities`),
-        fetch(`${API_URL}/api/connections`),
+      const [entitiesRes, rulesRes, healthRes] = await Promise.all([
+        fetch(`${API_URL}/api/entities?page=1&page_size=200`),
         fetch(`${API_URL}/api/connections/rules`),
         fetch(`${API_URL}/api/health`).catch(() => null)
       ]);
 
-      if (!entitiesRes.ok || !connectionsRes.ok || !rulesRes.ok) {
+      if (!entitiesRes.ok || !rulesRes.ok) {
         throw new Error('Failed to fetch initial data from backend');
       }
 
@@ -62,16 +62,15 @@ export default function Home() {
       }
 
       const entitiesData = await entitiesRes.json();
-      const connectionsData = await connectionsRes.json();
       const rulesData = await rulesRes.json();
 
-      setEntities(entitiesData);
-      setConnections(connectionsData);
+      setEntities(entitiesData.items);
       setConnectionRules(rulesData);
+      setRefreshKey(k => k + 1);
 
       // Auto-focus first entity if available and none selected
-      if (entitiesData.length > 0 && !focusEntityId) {
-        setFocusEntityId(entitiesData[0].id);
+      if (entitiesData.items.length > 0 && !focusEntityId) {
+        setFocusEntityId(entitiesData.items[0].id);
       }
     } catch (err) {
       setErrorMessage(err.message);
@@ -254,19 +253,19 @@ export default function Home() {
           {/* TAB 2: Entities list */}
           {activeTab === 'entities' && (
             <EntitiesList
-              entities={entities}
               setFocusEntityId={setFocusEntityId}
               setActiveTab={setActiveTab}
               onDeleteEntity={handleDeleteEntity}
+              refreshKey={refreshKey}
             />
           )}
 
           {/* TAB 3: Connections Ledger */}
           {activeTab === 'connections' && (
             <ConnectionsLedger
-              connections={connections}
               entities={entities}
               onDeleteConnection={handleDeleteConnection}
+              refreshKey={refreshKey}
             />
           )}
 

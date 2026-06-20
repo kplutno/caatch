@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, func
 import uuid
-from typing import List
+import math
 
 from app.database import get_session
 from app.models import (
@@ -11,6 +11,7 @@ from app.models import (
     ConnectionCreate,
     ConnectionRead,
     ALLOWED_CONNECTIONS,
+    PaginatedResponse,
 )
 
 router = APIRouter(prefix="/api/connections")
@@ -56,10 +57,25 @@ async def create_connection(
     return db_connection
 
 
-@router.get("", response_model=List[ConnectionRead])
-async def read_connections(session: AsyncSession = Depends(get_session)):
-    result = await session.exec(select(Connection))
-    return result.all()
+@router.get("", response_model=PaginatedResponse[ConnectionRead])
+async def read_connections(
+    page: int = Query(default=1, ge=1, description="1-based page number"),
+    page_size: int = Query(default=20, ge=1, le=200, description="Items per page"),
+    session: AsyncSession = Depends(get_session),
+):
+    total = (await session.exec(select(func.count()).select_from(Connection))).one()
+    total_pages = max(1, math.ceil(total / page_size))
+
+    statement = select(Connection).offset((page - 1) * page_size).limit(page_size)
+    result = await session.exec(statement)
+
+    return PaginatedResponse(
+        items=result.all(),
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 
 @router.delete("/{connection_id}")
