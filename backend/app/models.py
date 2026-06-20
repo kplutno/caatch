@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional, Dict, Any
-from sqlmodel import Field, SQLModel, Column
+from sqlmodel import Field, SQLModel, Column, AutoString
 from sqlalchemy import JSON, UUID
 from pydantic import EmailStr
 
@@ -32,7 +32,7 @@ class UserRead(UserBase):
 
 class EntityBase(SQLModel):
     name: str = Field(index=True)
-    type: EntityType = Field(index=True)  # Strictly validated Enum
+    type: EntityType = Field(sa_type=AutoString, index=True)  # Strictly validated at API layer, stored as standard string column
     description: Optional[str] = None
     properties: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
 

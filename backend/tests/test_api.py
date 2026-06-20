@@ -7,7 +7,10 @@ pytestmark = pytest.mark.asyncio
 async def test_health_check(client: AsyncClient):
     response = await client.get("/api/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "backend"}
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "backend"
+    assert "build_tag" in data
 
 async def test_create_and_read_entity(client: AsyncClient):
     # 1. Create a Person entity

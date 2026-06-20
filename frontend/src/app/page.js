@@ -18,6 +18,7 @@ export default function Home() {
   // Loading and Error states
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [backendBuildTag, setBackendBuildTag] = useState('fetching...');
 
   // Form states for creating Entity
   const [newEntity, setNewEntity] = useState({
@@ -55,13 +56,21 @@ export default function Home() {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const [entitiesRes, connectionsRes] = await Promise.all([
+      const [entitiesRes, connectionsRes, healthRes] = await Promise.all([
         fetch(`${API_URL}/api/entities`),
-        fetch(`${API_URL}/api/connections`)
+        fetch(`${API_URL}/api/connections`),
+        fetch(`${API_URL}/api/health`).catch(() => null)
       ]);
 
       if (!entitiesRes.ok || !connectionsRes.ok) {
         throw new Error('Failed to fetch initial data from backend');
+      }
+
+      if (healthRes && healthRes.ok) {
+        const healthData = await healthRes.json();
+        setBackendBuildTag(healthData.build_tag || 'local-dev');
+      } else {
+        setBackendBuildTag('unreachable');
       }
 
       const entitiesData = await entitiesRes.json();
@@ -311,7 +320,16 @@ export default function Home() {
               <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500">
                 Caatch Graph
               </h1>
-              <p className="text-xs text-slate-500 font-medium">Political Event & Relation Monitor</p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 font-medium">
+                <span>Political Event & Relation Monitor</span>
+                <span className="hidden sm:inline text-slate-300">|</span>
+                <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded text-slate-600 font-mono">
+                  Frontend: {process.env.NEXT_PUBLIC_IMAGE_TAG || 'local-dev'}
+                </span>
+                <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded text-slate-600 font-mono">
+                  Backend: {backendBuildTag}
+                </span>
+              </div>
             </div>
           </div>
 

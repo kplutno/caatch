@@ -26,6 +26,8 @@ spec:
         env:
         - name: ENVIRONMENT
           value: {{ .Values.environment | quote }}
+        - name: IMAGE_TAG
+          value: {{ .Values.backend.image.tag | quote }}
         - name: DATABASE_URL
           value: "postgresql+asyncpg://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ default (printf "%s-postgres" (include "caatch.fullname" .)) .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.database }}"
         livenessProbe:

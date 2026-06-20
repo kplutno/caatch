@@ -26,6 +26,8 @@ spec:
         env:
         - name: ENVIRONMENT
           value: {{ .Values.environment | quote }}
+        - name: NEXT_PUBLIC_IMAGE_TAG
+          value: {{ .Values.frontend.image.tag | quote }}
 ---
 apiVersion: v1
 kind: Service

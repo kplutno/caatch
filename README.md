@@ -1,8 +1,8 @@
 # Caatch
 
-**Caatch** is a full-stack web application designed to track political events, people, and monitor connections between those people, events, places, and more. 
+**Caatch** is a full-stack political connection tracking application designed to map and monitor relationships between political figures, events, locations, and organizations. 
 
-It features a **Python (FastAPI)** backend and a **Next.js** frontend, orchestrated with Kubernetes (via Docker Desktop).
+It features an asynchronous **Python (FastAPI)** backend using SQLModel, a interactive **Next.js** frontend displaying SVG circular ego-networks, and a **PostgreSQL** database, deployed onto a local Kubernetes (Kind) cluster using **Helm**.
 
 ## Project Structure
 
@@ -10,90 +10,84 @@ It features a **Python (FastAPI)** backend and a **Next.js** frontend, orchestra
 caatch/
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
-│   │   └── main.py          # FastAPI application
+│   │   ├── database.py      # SQLAlchemy / SQLModel async connection setup
+│   │   ├── main.py          # FastAPI application & CTE graph paths
+│   │   └── models.py        # Schema models (Entity, Connection) with JSON properties
+│   │   
+│   ├── migrations/          # Alembic database migrations
+│   ├── tests/
+│   │   ├── conftest.py      # Async client test fixture overrides
+│   │   └── test_api.py      # Extensive backend API tests using in-memory SQLite
 │   ├── Dockerfile
-│   ├── pyproject.toml       # Poetry project config
-│   ├── poetry.lock
-│   └── .dockerignore
+│   └── pyproject.toml       # Poetry package config
 ├── frontend/
 │   ├── src/app/
-│   │   ├── layout.js        # Root layout
-│   │   └── page.js          # Main page (calls backend)
-│   ├── Dockerfile
-│   ├── next.config.mjs
-│   ├── package.json
-│   └── .dockerignore
+│   │   ├── layout.js        # Root layout config
+│   │   ├── globals.css      # Light styling rules
+│   │   └── page.js          # SVG graph interface & CRUD panels
+│   └── Dockerfile
 ├── k8s/
-│   ├── backend.yaml         # Backend Kubernetes manifests
-│   └── frontend.yaml        # Frontend Kubernetes manifests
-├── tests/
-│   └── integration/
-│       └── test_frontend_calls_backend.py
-├── deploy.sh                # Script to build images and deploy to k8s
+│   ├── templates/           # Helm templates (backend, frontend, postgres, ingress)
+│   ├── Chart.yaml           # Helm chart definition
+│   └── values-dev.yaml      # Staging & development override configurations
+├── deploy.sh                # Unique timestamp image tagging & rollout automation script
 └── README.md
 ```
 
 ## Quick Start
 
-### 1. Start the services
+### 1. Deploy the Application
 
-Ensure you have a local Kubernetes cluster running (e.g., Docker Desktop with Kubernetes enabled).
-
-Make the deployment script executable and run it:
+Deploy the stack locally using the rollout script. This builds container images tagged with dynamic human-readable timestamps (`YYYYMMDD-HHMMSS`), loads them into your Kind cluster, executes Helm upgrades, and handles port-forwarding for the Postgres DB, backend, and frontend.
 
 ```bash
 chmod +x deploy.sh
-./deploy.sh
+./deploy.sh dev
 ```
 
-This will:
-- Build local docker images for both the frontend and backend.
-- Apply the Kubernetes manifests from the `k8s/` directory.
-- Expose the **backend** on [http://localhost:8000](http://localhost:8000)
-- Expose the **frontend** on [http://localhost:3000](http://localhost:3000)
+This maps:
+- **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+- **FastAPI Backend**: [http://localhost:8000](http://localhost:8000)
+- **PostgreSQL**: `localhost:5432`
 
-### 2. Check Deployment Status
-
-You can monitor your pods using `kubectl`:
-
+### 2. View Status
+Verify Kubernetes resources are healthy:
 ```bash
 kubectl get pods
 kubectl get svc
 ```
 
-### 3. Run integration tests
-
+### 3. Run Backend Test Suite
+The backend features an asynchronous test suite executing against an in-memory SQLite instance:
 ```bash
-pip install requests pytest
-pytest tests/integration/ -v
+cd backend
+poetry install
+poetry run pytest tests/ -v
 ```
 
-### 4. Stop the services
-
-To remove the deployment from your cluster, you can delete the resources:
-
-```bash
-kubectl delete -f k8s/backend.yaml
-kubectl delete -f k8s/frontend.yaml
-```
+---
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/health` | GET | Health check — returns service status |
-| `/api/greet?name=<name>` | GET | Returns a greeting (defaults to "World") |
+### Entities CRUD
+* `POST /api/entities`: Create a new person, place, event, or organization.
+* `GET /api/entities`: Get list of entities (supports type filtering, e.g., `?type=person`).
+* `GET /api/entities/{entity_id}`: Read metadata of a single entity.
+* `PUT /api/entities/{entity_id}`: Update properties and metadata.
+* `DELETE /api/entities/{entity_id}`: Cascade deletes entity and connected edges.
 
-## Architecture
+### Connections CRUD
+* `POST /api/connections`: Create a new relationship (e.g. `MEMBER_OF`, `KNOWS`).
+* `GET /api/connections`: List all connection edges.
+* `DELETE /api/connections/{connection_id}`: Delete an edge.
 
-The **frontend** and **backend** are fully independent services. The browser calls the backend directly:
+### Graph and Networks
+* `GET /api/graph`: Returns complete nodes and edges list.
+* `GET /api/entities/{entity_id}/network?depth=2`: Returns recursive ego-network subgraph (uses a SQL recursive CTE path walk compatible with SQLite/Postgres).
 
-```
-Browser  →  GET http://localhost:8000/api/health   (backend directly)
-Browser  →  GET http://localhost:3000              (frontend for UI)
-```
+---
 
-- The backend URL is baked into the frontend JS bundle at build time via the `NEXT_PUBLIC_API_URL` build arg
-- The backend has CORS enabled to allow cross-origin requests from the frontend
-- Both services are exposed via Kubernetes `LoadBalancer` services that map to your local ports.
+## Technical Specifications
+* **Database**: PostgreSQL (StatefulSet) using native JSONB columns and UUID primary keys. Cross-compatible SQLite translations are supported at runtime.
+* **Network Graph Layout**: Custom UI rendering implementing circular geometry SVG layout nodes centered dynamically.
+* **Development Flow**: Deployments use timestamped image tags (`deploy.sh`) to prevent Kind node containerd cache collision issues.

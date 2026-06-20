@@ -19,7 +19,10 @@ docker build -t caatch-backend:$TAG ./backend
 
 # Build frontend
 echo "Building frontend image..."
-docker build -t caatch-frontend:$TAG --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 ./frontend
+docker build -t caatch-frontend:$TAG \
+  --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
+  --build-arg NEXT_PUBLIC_IMAGE_TAG=$TAG \
+  ./frontend
 
 # Load images into Kind cluster (dev environment)
 if [ "$ENV" = "dev" ] && command -v kind >/dev/null 2>&1; then
@@ -53,3 +56,5 @@ if [ "$ENV" = "dev" ]; then
 fi
 
 echo "Deployment complete! Run 'kubectl get pods' and 'kubectl get svc' to see the status."
+echo "Using image tag: $TAG"
+

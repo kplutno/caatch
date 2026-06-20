@@ -17,19 +17,24 @@ from app.models import (
 
 app = FastAPI()
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# CORS Configuration
+origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=False,
+    allow_origins=origins,
+    allow_credentials="*" not in origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/api/health")
 async def health():
-    return {"status": "healthy", "service": "backend"}
+    return {
+        "status": "healthy",
+        "service": "backend",
+        "build_tag": os.getenv("IMAGE_TAG", "local-dev")
+    }
 
 @app.get("/api/greet")
 async def greet(name: str = "World"):
