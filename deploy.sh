@@ -30,4 +30,17 @@ helm upgrade --install caatch ./k8s \
   --set backend.image.tag=$TAG \
   --set frontend.image.tag=$TAG
 
+# Force rollout if requested
+FORCE_ROLLOUT=false
+for arg in "$@"; do
+  if [ "$arg" = "--force" ] || [ "$arg" = "-f" ]; then
+    FORCE_ROLLOUT=true
+  fi
+done
+
+if [ "$FORCE_ROLLOUT" = true ]; then
+  echo "Forcing Kubernetes rollout restart..."
+  kubectl rollout restart deployment/caatch-backend deployment/caatch-frontend
+fi
+
 echo "Deployment complete! Run 'kubectl get pods' and 'kubectl get svc' to see the status."

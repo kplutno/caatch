@@ -1,6 +1,8 @@
 # Caatch
 
-Full-stack application with a **Python (FastAPI)** backend and a **Next.js** frontend, orchestrated with Kubernetes (via Docker Desktop).
+**Caatch** is a full-stack web application designed to track political events, people, and monitor connections between those people, events, places, and more. 
+
+It features a **Python (FastAPI)** backend and a **Next.js** frontend, orchestrated with Kubernetes (via Docker Desktop).
 
 ## Project Structure
 

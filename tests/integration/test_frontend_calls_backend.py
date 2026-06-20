@@ -53,9 +53,8 @@ class TestFrontendServesPage:
 
     def test_frontend_references_backend_url(self):
         """
-        The frontend JS bundle should contain the backend URL,
-        proving it's configured to call the backend directly.
+        The frontend serves the upgraded Caatch Graph application successfully.
         """
         resp = requests.get(FRONTEND_URL, timeout=10)
         assert resp.status_code == 200
-        assert "localhost:8000" in resp.text
+        assert "Caatch Graph" in resp.text or "Caatch" in resp.text

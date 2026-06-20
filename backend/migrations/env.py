@@ -18,7 +18,7 @@ if config.config_file_name is not None:
 
 import os
 from sqlmodel import SQLModel
-from app.models import User # Import all models here
+from app.models import User, Entity, Connection # Import all models here
 
 # add your model's MetaData object here
 # for 'autogenerate' support
