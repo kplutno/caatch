@@ -133,7 +133,7 @@ export default function Home() {
 
       if (!res.ok) throw new Error(await res.text());
       const created = await res.json();
-
+      
       setNewEntity({
         name: '',
         type: 'person',
@@ -174,7 +174,7 @@ export default function Home() {
       });
 
       if (!res.ok) throw new Error(await res.text());
-
+      
       setNewConnection({
         source_id: '',
         target_id: '',
@@ -199,7 +199,7 @@ export default function Home() {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(await res.text());
-
+      
       if (focusEntityId === id) {
         setFocusEntityId(null);
       }
@@ -216,7 +216,7 @@ export default function Home() {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(await res.text());
-
+      
       await fetchData();
       if (focusEntityId) {
         fetchEgoNetwork(focusEntityId, depth);
@@ -281,42 +281,42 @@ export default function Home() {
     return { nodes, edges };
   }, [focusEntityId, focusNetwork]);
 
-  // Color helper based on node types
+  // Color helper based on node types (adjusted for light mode)
   const getTypeColor = (type) => {
     switch (type) {
-      case 'person': return { bg: 'bg-teal-500/10 border-teal-500/30 text-teal-400', fill: '#14b8a6', glow: 'rgba(20, 184, 166, 0.4)' };
-      case 'event': return { bg: 'bg-rose-500/10 border-rose-500/30 text-rose-400', fill: '#f43f5e', glow: 'rgba(244, 63, 94, 0.4)' };
-      case 'place': return { bg: 'bg-sky-500/10 border-sky-500/30 text-sky-400', fill: '#0ea5e9', glow: 'rgba(14, 165, 233, 0.4)' };
-      case 'organization': return { bg: 'bg-amber-500/10 border-amber-500/30 text-amber-400', fill: '#f59e0b', glow: 'rgba(245, 158, 11, 0.4)' };
-      default: return { bg: 'bg-purple-500/10 border-purple-500/30 text-purple-400', fill: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
+      case 'person': return { bg: 'bg-teal-50 border-teal-200 text-teal-700', fill: '#0d9488', glow: 'rgba(13, 148, 136, 0.2)' };
+      case 'event': return { bg: 'bg-rose-5 border-rose-200 text-rose-700', fill: '#e11d48', glow: 'rgba(225, 29, 72, 0.2)' };
+      case 'place': return { bg: 'bg-sky-5 border-sky-200 text-sky-700', fill: '#0284c7', glow: 'rgba(2, 132, 199, 0.2)' };
+      case 'organization': return { bg: 'bg-amber-5 border-amber-200 text-amber-700', fill: '#d97706', glow: 'rgba(217, 119, 6, 0.2)' };
+      default: return { bg: 'bg-purple-5 border-purple-200 text-purple-700', fill: '#9333ea', glow: 'rgba(147, 51, 234, 0.2)' };
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500/30">
+    <main className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-500/20">
       {/* Decorative Blur Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-teal-500/10 blur-[130px]" />
-        <div className="absolute top-[50%] -right-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute -top-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-teal-500/5 blur-[130px]" />
+        <div className="absolute top-[50%] -right-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[120px]" />
       </div>
 
       {/* Header */}
-      <header className="border-b border-white/5 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-30 px-6 py-4">
+      <header className="border-b border-slate-200/80 bg-white/70 backdrop-blur-xl sticky top-0 z-30 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-teal-500/10">
               <span className="font-black text-xl text-white">C</span>
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+              <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500">
                 Caatch Graph
               </h1>
-              <p className="text-xs text-slate-400 font-medium">Political Event & Relation Monitor</p>
+              <p className="text-xs text-slate-500 font-medium">Political Event & Relation Monitor</p>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex bg-slate-950 p-1.5 rounded-xl border border-white/5">
+          <nav className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200/80">
             {[
               { id: 'graph', label: 'Network Explorer' },
               { id: 'entities', label: 'Entities' },
@@ -325,10 +325,11 @@ export default function Home() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${activeTab === tab.id
-                  ? 'bg-slate-800 text-teal-400 shadow-inner border border-white/5'
-                  : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? 'bg-white text-teal-600 shadow-sm border border-slate-200'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
               >
                 {tab.label}
               </button>
@@ -339,40 +340,40 @@ export default function Home() {
 
       {/* Main Workspace */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+        
         {/* Error Notification */}
         {errorMessage && (
-          <div className="col-span-12 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center justify-between">
+          <div className="col-span-12 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center justify-between shadow-sm">
             <span>{errorMessage}</span>
-            <button onClick={() => setErrorMessage('')} className="hover:text-white font-bold">&times;</button>
+            <button onClick={() => setErrorMessage('')} className="hover:text-rose-900 font-bold">&times;</button>
           </div>
         )}
 
         {/* Left Control Panel / Inputs (4 cols) */}
         <aside className="lg:col-span-4 space-y-6">
-
+          
           {/* Quick Entity Creation */}
-          <section className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-slate-300 tracking-wider uppercase">Add Entity</h2>
+          <section className="bg-white/80 backdrop-blur-md border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4">
+            <h2 className="text-sm font-semibold text-slate-600 tracking-wider uppercase">Add Entity</h2>
             <form onSubmit={handleCreateEntity} className="space-y-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Entity Name</label>
+                <label className="block text-xs text-slate-500 mb-1">Entity Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Senator Jane Doe, Geneva Summit"
                   value={newEntity.name}
                   onChange={(e) => setNewEntity(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Type</label>
+                <label className="block text-xs text-slate-500 mb-1">Type</label>
                 <select
                   value={newEntity.type}
                   onChange={(e) => setNewEntity(prev => ({ ...prev, type: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none"
                 >
                   <option value="person">👤 Person</option>
                   <option value="event">📅 Event</option>
@@ -383,38 +384,38 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Description</label>
+                <label className="block text-xs text-slate-500 mb-1">Description</label>
                 <textarea
                   placeholder="Brief context or notes"
                   rows={2}
                   value={newEntity.description}
                   onChange={(e) => setNewEntity(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
                 />
               </div>
 
               {/* Dynamic properties */}
               <div className="space-y-2">
-                <label className="block text-xs text-slate-400">Custom Attributes (Optional)</label>
+                <label className="block text-xs text-slate-500">Custom Attributes (Optional)</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="Key (e.g. Party)"
                     value={newEntity.propKey}
                     onChange={(e) => setNewEntity(prev => ({ ...prev, propKey: e.target.value }))}
-                    className="flex-1 bg-slate-950/60 border border-white/10 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
                   <input
                     type="text"
                     placeholder="Value (e.g. Democrat)"
                     value={newEntity.propValue}
                     onChange={(e) => setNewEntity(prev => ({ ...prev, propValue: e.target.value }))}
-                    className="flex-1 bg-slate-950/60 border border-white/10 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={addProperty}
-                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold"
+                    className="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition-colors"
                   >
                     +
                   </button>
@@ -423,9 +424,9 @@ export default function Home() {
                 {Object.keys(newEntity.properties).length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {Object.entries(newEntity.properties).map(([k, v]) => (
-                      <span key={k} className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-300">
+                      <span key={k} className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-600">
                         <strong>{k}:</strong> {v}
-                        <button type="button" onClick={() => removeProperty(k)} className="text-slate-500 hover:text-slate-300">&times;</button>
+                        <button type="button" onClick={() => removeProperty(k)} className="text-slate-400 hover:text-slate-600">&times;</button>
                       </span>
                     ))}
                   </div>
@@ -434,7 +435,7 @@ export default function Home() {
 
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-semibold text-xs rounded-xl shadow-lg transition-all"
+                className="w-full py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-semibold text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
               >
                 Create Entity
               </button>
@@ -442,16 +443,16 @@ export default function Home() {
           </section>
 
           {/* Quick Connection Creation */}
-          <section className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-slate-300 tracking-wider uppercase">Link Entities</h2>
+          <section className="bg-white/80 backdrop-blur-md border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4">
+            <h2 className="text-sm font-semibold text-slate-600 tracking-wider uppercase">Link Entities</h2>
             <form onSubmit={handleCreateConnection} className="space-y-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Source Entity</label>
+                <label className="block text-xs text-slate-500 mb-1">Source Entity</label>
                 <select
                   required
                   value={newConnection.source_id}
                   onChange={(e) => setNewConnection(prev => ({ ...prev, source_id: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none"
                 >
                   <option value="">-- Choose Origin --</option>
                   {entities.map(e => (
@@ -461,16 +462,16 @@ export default function Home() {
               </div>
 
               <div className="flex items-center justify-center">
-                <span className="text-slate-600 font-extrabold text-sm">⬇ Connected To ⬇</span>
+                <span className="text-slate-400 font-extrabold text-xs">⬇ Connected To ⬇</span>
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Target Entity</label>
+                <label className="block text-xs text-slate-500 mb-1">Target Entity</label>
                 <select
                   required
                   value={newConnection.target_id}
                   onChange={(e) => setNewConnection(prev => ({ ...prev, target_id: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none"
                 >
                   <option value="">-- Choose Destination --</option>
                   {entities.map(e => (
@@ -480,31 +481,31 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Relation Label</label>
+                <label className="block text-xs text-slate-500 mb-1">Relation Label</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. MEMBER_OF, ATTENDED, FUNDED"
                   value={newConnection.label}
                   onChange={(e) => setNewConnection(prev => ({ ...prev, label: e.target.value.toUpperCase() }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Description / Proof</label>
+                <label className="block text-xs text-slate-500 mb-1">Description / Proof</label>
                 <input
                   type="text"
                   placeholder="e.g. Signed treaty in 2024"
                   value={newConnection.description}
                   onChange={(e) => setNewConnection(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-semibold text-xs rounded-xl shadow-lg transition-all"
+                className="w-full py-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-semibold text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
               >
                 Establish Link
               </button>
@@ -514,19 +515,19 @@ export default function Home() {
 
         {/* Right Action Canvas (8 cols) */}
         <section className="lg:col-span-8 flex flex-col">
-
+          
           {/* TAB 1: Network Explorer */}
           {activeTab === 'graph' && (
             <div className="flex-1 flex flex-col space-y-6">
-
+              
               {/* Explorer Controls */}
-              <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/40 p-4 rounded-2xl border border-white/5">
+              <div className="flex flex-wrap items-center justify-between gap-4 bg-white/80 p-4 rounded-2xl border border-slate-200/80 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <label className="text-xs text-slate-400">Select Focus Entity:</label>
+                  <label className="text-xs text-slate-500">Select Focus Entity:</label>
                   <select
                     value={focusEntityId || ''}
                     onChange={(e) => setFocusEntityId(e.target.value || null)}
-                    className="bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none"
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
                   >
                     <option value="">-- No Focus Selected --</option>
                     {entities.map(e => (
@@ -536,11 +537,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-slate-400">Scan Depth:</label>
+                  <label className="text-xs text-slate-500">Scan Depth:</label>
                   <select
                     value={depth}
                     onChange={(e) => setDepth(Number(e.target.value))}
-                    className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-200"
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800"
                   >
                     <option value={1}>1 Degree (Direct)</option>
                     <option value={2}>2 Degrees (Standard)</option>
@@ -550,8 +551,8 @@ export default function Home() {
               </div>
 
               {/* Ego Graph Display */}
-              <div className="flex-1 min-h-[480px] bg-slate-950/40 border border-white/5 rounded-3xl relative flex items-center justify-center p-6 shadow-2xl">
-
+              <div className="flex-1 min-h-[480px] bg-white/60 border border-slate-200/60 rounded-3xl relative flex items-center justify-center p-6 shadow-sm">
+                
                 {focusEntityId && visualNetwork.nodes.length > 0 ? (
                   <div className="relative w-full max-w-[500px] h-[500px]">
                     <svg viewBox="0 0 500 500" className="w-full h-full">
@@ -563,7 +564,7 @@ export default function Home() {
                             y1={edge.y1}
                             x2={edge.x2}
                             y2={edge.y2}
-                            stroke="rgba(255, 255, 255, 0.15)"
+                            stroke="rgba(0, 0, 0, 0.08)"
                             strokeWidth="2"
                             strokeDasharray="4 4"
                           />
@@ -574,7 +575,7 @@ export default function Home() {
                             width="90"
                             height="18"
                           >
-                            <div className="bg-slate-900/90 border border-white/10 rounded text-[9px] font-extrabold text-teal-400 py-0.5 text-center truncate shadow">
+                            <div className="bg-white/95 border border-slate-200 rounded text-[9px] font-extrabold text-teal-600 py-0.5 text-center truncate shadow-sm">
                               {edge.label}
                             </div>
                           </foreignObject>
@@ -596,7 +597,7 @@ export default function Home() {
                               cy={node.y}
                               r={node.isCenter ? 32 : 24}
                               fill="transparent"
-                              className="group-hover:fill-white/5 transition-all"
+                              className="group-hover:fill-slate-900/5 transition-all"
                               stroke={style.fill}
                               strokeWidth={node.isCenter ? 3 : 1}
                               style={{
@@ -608,7 +609,7 @@ export default function Home() {
                               cx={node.x}
                               cy={node.y}
                               r={node.isCenter ? 26 : 18}
-                              fill="#0f172a"
+                              fill="#ffffff"
                             />
                             {/* Node Label Display */}
                             <foreignObject
@@ -618,7 +619,7 @@ export default function Home() {
                               height="40"
                             >
                               <div className="text-center">
-                                <p className={`text-[11px] font-bold truncate ${node.isCenter ? 'text-white' : 'text-slate-300'}`}>
+                                <p className={`text-[11px] font-bold truncate ${node.isCenter ? 'text-slate-900' : 'text-slate-700'}`}>
                                   {node.name}
                                 </p>
                                 <p className="text-[9px] text-slate-500 uppercase tracking-widest">
@@ -633,21 +634,21 @@ export default function Home() {
 
                     {/* Interactive Legend / Focus details overlay */}
                     {focusEntity && (
-                      <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl max-w-[220px] shadow-lg">
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-2xl max-w-[220px] shadow-md">
                         <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-extrabold uppercase mb-2 ${getTypeColor(focusEntity.type).bg}`}>
                           {focusEntity.type}
                         </span>
-                        <h3 className="text-sm font-bold text-slate-100">{focusEntity.name}</h3>
-                        <p className="text-[11px] text-slate-400 mt-1 leading-relaxed line-clamp-3">
+                        <h3 className="text-sm font-bold text-slate-900">{focusEntity.name}</h3>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed line-clamp-3">
                           {focusEntity.description || 'No description provided.'}
                         </p>
-
+                        
                         {Object.keys(focusEntity.properties || {}).length > 0 && (
-                          <div className="mt-3 pt-2.5 border-t border-white/5 space-y-1 max-h-24 overflow-y-auto">
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1 max-h-24 overflow-y-auto">
                             {Object.entries(focusEntity.properties).map(([k, v]) => (
                               <div key={k} className="flex justify-between text-[9px] font-medium text-slate-500">
                                 <span>{k}:</span>
-                                <span className="text-slate-300 text-right font-semibold">{v}</span>
+                                <span className="text-slate-700 text-right font-semibold">{v}</span>
                               </div>
                             ))}
                           </div>
@@ -661,7 +662,7 @@ export default function Home() {
                     {entities.length > 0 && (
                       <button
                         onClick={() => setFocusEntityId(entities[0].id)}
-                        className="px-4 py-2 bg-slate-900 border border-white/10 rounded-xl text-xs hover:bg-slate-800 text-teal-400 font-bold transition-all"
+                        className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs hover:bg-slate-50 text-teal-600 font-bold transition-all shadow-sm"
                       >
                         Start Explorer with {entities[0].name}
                       </button>
@@ -676,36 +677,36 @@ export default function Home() {
           {activeTab === 'entities' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-200">Registered Entities</h2>
-                <span className="text-xs bg-slate-900 border border-white/5 text-slate-400 px-2 py-1 rounded">
+                <h2 className="text-lg font-bold text-slate-800">Registered Entities</h2>
+                <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded shadow-sm">
                   {entities.length} Total
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {entities.length === 0 ? (
-                  <div className="col-span-2 p-12 text-center bg-slate-900/20 border border-white/5 rounded-2xl text-slate-500 text-sm">
+                  <div className="col-span-2 p-12 text-center bg-white border border-slate-200 rounded-2xl text-slate-450 text-sm shadow-sm">
                     No entities found. Create entities using the side panel!
                   </div>
                 ) : (
                   entities.map(e => {
                     const style = getTypeColor(e.type);
                     return (
-                      <div key={e.id} className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 space-y-3 flex flex-col justify-between hover:border-white/10 transition-all">
+                      <div key={e.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 flex flex-col justify-between hover:border-slate-300 shadow-sm transition-all">
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${style.bg}`}>
                               {e.type}
                             </span>
-                            <span className="text-[10px] text-slate-600 font-mono">ID: {e.id.slice(0, 8)}...</span>
+                            <span className="text-[10px] text-slate-400 font-mono">ID: {e.id.slice(0, 8)}...</span>
                           </div>
-                          <h3 className="font-bold text-slate-200 text-base">{e.name}</h3>
-                          <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">{e.description || 'No description provided.'}</p>
-
+                          <h3 className="font-bold text-slate-900 text-base">{e.name}</h3>
+                          <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{e.description || 'No description provided.'}</p>
+                          
                           {Object.keys(e.properties || {}).length > 0 && (
                             <div className="flex flex-wrap gap-1 pt-1.5">
                               {Object.entries(e.properties).map(([k, v]) => (
-                                <span key={k} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">
+                                <span key={k} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-500 border border-slate-100">
                                   {k}: {v}
                                 </span>
                               ))}
@@ -713,16 +714,16 @@ export default function Home() {
                           )}
                         </div>
 
-                        <div className="flex gap-2 pt-3 border-t border-white/5">
+                        <div className="flex gap-2 pt-3 border-t border-slate-100">
                           <button
                             onClick={() => { setFocusEntityId(e.id); setActiveTab('graph'); }}
-                            className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-teal-400 transition-all"
+                            className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-250 rounded-lg text-[10px] font-bold text-teal-600 transition-all"
                           >
                             Explore Network
                           </button>
                           <button
                             onClick={() => handleDeleteEntity(e.id)}
-                            className="px-2.5 py-1.5 bg-rose-950/30 hover:bg-rose-900/30 border border-rose-500/20 hover:border-rose-500/40 rounded-lg text-[10px] font-bold text-rose-400 transition-all text-center"
+                            className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-600 transition-all text-center"
                           >
                             Delete
                           </button>
@@ -739,22 +740,22 @@ export default function Home() {
           {activeTab === 'connections' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-200">Established Relations</h2>
-                <span className="text-xs bg-slate-900 border border-white/5 text-slate-400 px-2 py-1 rounded">
+                <h2 className="text-lg font-bold text-slate-800">Established Relations</h2>
+                <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded shadow-sm">
                   {connections.length} Total
                 </span>
               </div>
 
-              <div className="bg-slate-900/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                 {connections.length === 0 ? (
-                  <div className="p-12 text-center text-slate-500 text-sm">
+                  <div className="p-12 text-center text-slate-550 text-sm">
                     No connections established yet. Create connections using the side panel!
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="bg-slate-950/60 border-b border-white/5 text-slate-400">
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-600">
                           <th className="p-4 font-semibold uppercase tracking-wider">Source Entity</th>
                           <th className="p-4 font-semibold uppercase tracking-wider text-center">Relationship</th>
                           <th className="p-4 font-semibold uppercase tracking-wider">Target Entity</th>
@@ -762,32 +763,32 @@ export default function Home() {
                           <th className="p-4 font-semibold uppercase tracking-wider text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-slate-100">
                         {connections.map((c, i) => {
                           const src = entities.find(e => e.id === c.source_id);
                           const trg = entities.find(e => e.id === c.target_id);
                           return (
-                            <tr key={i} className="hover:bg-white/5 transition-colors">
+                            <tr key={i} className="hover:bg-slate-50 transition-colors">
                               <td className="p-4">
-                                <span className="font-bold text-slate-200">{src ? src.name : 'Unknown Node'}</span>
+                                <span className="font-bold text-slate-800">{src ? src.name : 'Unknown Node'}</span>
                                 <span className="block text-[10px] text-slate-500 uppercase">{src ? src.type : ''}</span>
                               </td>
                               <td className="p-4 text-center">
-                                <span className="px-2 py-1 bg-teal-500/10 border border-teal-500/20 rounded-md text-[10px] font-extrabold text-teal-400 tracking-wider">
+                                <span className="px-2 py-1 bg-teal-500/10 border border-teal-500/30 rounded-md text-[10px] font-extrabold text-teal-600 tracking-wider">
                                   {c.label}
                                 </span>
                               </td>
                               <td className="p-4">
-                                <span className="font-bold text-slate-200">{trg ? trg.name : 'Unknown Node'}</span>
+                                <span className="font-bold text-slate-800">{trg ? trg.name : 'Unknown Node'}</span>
                                 <span className="block text-[10px] text-slate-500 uppercase">{trg ? trg.type : ''}</span>
                               </td>
-                              <td className="p-4 text-slate-400 italic">
+                              <td className="p-4 text-slate-600 italic">
                                 {c.description || '--'}
                               </td>
                               <td className="p-4 text-right">
                                 <button
                                   onClick={() => handleDeleteConnection(c.id)}
-                                  className="text-xs font-semibold text-rose-400 hover:text-rose-300 hover:underline"
+                                  className="text-xs font-semibold text-rose-600 hover:text-rose-500 hover:underline"
                                 >
                                   Delete
                                 </button>

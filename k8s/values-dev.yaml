@@ -2,9 +2,13 @@ environment: dev
 
 backend:
   replicas: 1
+  image:
+    pullPolicy: Always
 
 frontend:
   replicas: 1
+  image:
+    pullPolicy: Always
 
 postgres:
   storage:

@@ -20,10 +20,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Check if database is postgres and create enum type
+    bind = op.get_bind()
+    if bind.dialect.name == 'postgresql':
+        # Create EntityType enum type in PostgreSQL
+        sa.Enum('person', 'event', 'place', 'organization', 'other', name='entitytype').create(bind, checkfirst=True)
+
     op.create_table('entity',
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column('type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column('type', sa.Enum('person', 'event', 'place', 'organization', 'other', name='entitytype', inherit_schema=True), nullable=False),
         sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column('properties', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.PrimaryKeyConstraint('id')
@@ -55,3 +61,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_entity_type'), table_name='entity')
     op.drop_index(op.f('ix_entity_name'), table_name='entity')
     op.drop_table('entity')
+    
+    bind = op.get_bind()
+    if bind.dialect.name == 'postgresql':
+        sa.Enum(name='entitytype').drop(bind, checkfirst=True)
