@@ -107,7 +107,7 @@ export default function EntitiesList({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">Registered Entities</h2>
         <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded">
@@ -115,18 +115,18 @@ export default function EntitiesList({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {isLoading ? (
           <div className="col-span-2 p-12 text-center text-slate-400 text-sm animate-pulse">Loading…</div>
         ) : data.items.length === 0 ? (
-          <div className="col-span-2 p-12 text-center bg-white border border-slate-200 rounded-2xl text-slate-450 text-sm">
+          <div className="col-span-2 p-8 text-center bg-white border border-slate-200 rounded-md text-slate-450 text-sm">
             No entities found. Create entities using the side panel!
           </div>
         ) : (
           data.items.map(e => {
             const style = getTypeColor(e.type);
             return (
-              <div key={e.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 flex flex-col justify-between hover:border-slate-300 transition-all">
+              <div key={e.id} className="bg-white border border-slate-200 rounded-md p-3.5 space-y-2 flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${style.bg}`}>
@@ -148,16 +148,16 @@ export default function EntitiesList({
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-3 border-t border-slate-100">
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
                   <button
                     onClick={() => { setFocusEntityId(e.id); setActiveTab('graph'); }}
-                    className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-teal-600 transition-all"
+                    className="flex-1 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[10px] font-bold text-teal-600 transition-all"
                   >
                     Explore Network
                   </button>
                   <button
                     onClick={() => handleDelete(e.id)}
-                    className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-600 transition-all text-center"
+                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded text-[10px] font-bold text-rose-600 transition-all text-center"
                   >
                     Delete
                   </button>

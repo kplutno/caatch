@@ -172,8 +172,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-500/20">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-30 px-4 py-2.5">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-30 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div>
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
@@ -193,7 +193,7 @@ export default function Home() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+          <nav className="flex bg-slate-100 p-0.5 rounded border border-slate-200">
             {[
               { id: 'graph', label: 'Network Explorer' },
               { id: 'entities', label: 'Entities' },
@@ -202,7 +202,7 @@ export default function Home() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all duration-300 ${activeTab === tab.id
+                className={`px-3 py-1.5 text-[11px] font-semibold rounded transition-all duration-300 ${activeTab === tab.id
                   ? 'bg-white text-teal-600 border border-slate-200'
                   : 'text-slate-500 hover:text-slate-700'
                   }`}
@@ -215,18 +215,18 @@ export default function Home() {
       </header>
 
       {/* Main Workspace */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-2 md:p-3 grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-2 md:p-2 grid grid-cols-1 lg:grid-cols-12 gap-2">
 
         {/* Error Notification */}
         {errorMessage && (
-          <div className="col-span-12 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between shadow-sm">
+          <div className="col-span-12 p-2 rounded border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-center justify-between shadow-sm">
             <span>{errorMessage}</span>
             <button onClick={() => setErrorMessage('')} className="hover:text-rose-900 font-bold">&times;</button>
           </div>
         )}
 
         {/* Left Control Panel / Inputs (4 cols) */}
-        <aside className="lg:col-span-4 space-y-4">
+        <aside className="lg:col-span-4 space-y-2">
           <AddEntityForm onCreateEntity={handleCreateEntity} />
           <LinkEntitiesForm
             entities={entities}

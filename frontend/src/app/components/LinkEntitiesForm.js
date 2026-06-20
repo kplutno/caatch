@@ -71,7 +71,7 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
   };
 
   return (
-    <section className="bg-white border border-slate-200 p-4 rounded-xl space-y-3">
+    <section className="bg-white border border-slate-200 p-3 rounded-md space-y-2">
       <h2 className="text-xs font-semibold text-slate-600 tracking-wider uppercase">Link Entities</h2>
       <form onSubmit={handleSubmit} className="space-y-2">
         <div>
@@ -80,7 +80,7 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
             required
             value={newConnection.source_id}
             onChange={(e) => setNewConnection(prev => ({ ...prev, source_id: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
           >
             <option value="">-- Choose Origin --</option>
             {entities.map(e => (
@@ -100,7 +100,7 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
             disabled={!newConnection.source_id}
             value={newConnection.label}
             onChange={(e) => setNewConnection(prev => ({ ...prev, label: e.target.value, target_id: '' }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none disabled:opacity-50"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none disabled:opacity-50"
           >
             {!newConnection.source_id && <option value="">-- Choose Source First --</option>}
             {allowedLabels.map(lbl => (
@@ -118,7 +118,7 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
             disabled={!newConnection.label}
             value={newConnection.target_id}
             onChange={(e) => setNewConnection(prev => ({ ...prev, target_id: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none disabled:opacity-50"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none disabled:opacity-50"
           >
             <option value="">-- Choose Destination --</option>
             {filteredTargets.map(e => (
@@ -134,13 +134,13 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
             placeholder="e.g. Signed treaty in 2024"
             value={newConnection.description}
             onChange={(e) => setNewConnection(prev => ({ ...prev, description: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-all"
+          className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded transition-all"
         >
           Establish Link
         </button>
@@ -148,4 +148,3 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
     </section>
   );
 }
-

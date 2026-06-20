@@ -57,7 +57,7 @@ export default function AddEntityForm({ onCreateEntity }) {
   };
 
   return (
-    <section className="bg-white border border-slate-200 p-4 rounded-xl space-y-3">
+    <section className="bg-white border border-slate-200 p-3 rounded-md space-y-2">
       <h2 className="text-xs font-semibold text-slate-600 tracking-wider uppercase">Add Entity</h2>
       <form onSubmit={handleSubmit} className="space-y-2">
         <div>
@@ -68,7 +68,7 @@ export default function AddEntityForm({ onCreateEntity }) {
             placeholder="e.g. Senator Jane Doe, Geneva Summit"
             value={newEntity.name}
             onChange={(e) => setNewEntity(prev => ({ ...prev, name: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
           />
         </div>
 
@@ -77,7 +77,7 @@ export default function AddEntityForm({ onCreateEntity }) {
           <select
             value={newEntity.type}
             onChange={(e) => setNewEntity(prev => ({ ...prev, type: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
           >
             <option value="person">👤 Person</option>
             <option value="event">📅 Event</option>
@@ -94,7 +94,7 @@ export default function AddEntityForm({ onCreateEntity }) {
             rows={2}
             value={newEntity.description}
             onChange={(e) => setNewEntity(prev => ({ ...prev, description: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none resize-none"
+            className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none resize-none"
           />
         </div>
 
@@ -107,19 +107,19 @@ export default function AddEntityForm({ onCreateEntity }) {
               placeholder="Key (e.g. Party)"
               value={newEntity.propKey}
               onChange={(e) => setNewEntity(prev => ({ ...prev, propKey: e.target.value }))}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none"
             />
             <input
               type="text"
               placeholder="Value (e.g. Democrat)"
               value={newEntity.propValue}
               onChange={(e) => setNewEntity(prev => ({ ...prev, propValue: e.target.value }))}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none"
             />
             <button
               type="button"
               onClick={addProperty}
-              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition-colors"
+              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold transition-colors"
             >
               +
             </button>
@@ -139,7 +139,7 @@ export default function AddEntityForm({ onCreateEntity }) {
 
         <button
           type="submit"
-          className="w-full py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg transition-all"
+          className="w-full py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded transition-all"
         >
           Create Entity
         </button>

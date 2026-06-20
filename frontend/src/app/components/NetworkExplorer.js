@@ -173,15 +173,15 @@ export default function NetworkExplorer({
   }, [focusEntityId, focusNetwork, positions]);
 
   return (
-    <div className="flex-1 flex flex-col space-y-3">
+    <div className="flex-1 flex flex-col space-y-2">
       {/* Explorer Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-white p-2 rounded-md border border-slate-200">
         <div className="flex items-center gap-3">
           <label className="text-xs text-slate-500">Select Focus Entity:</label>
           <select
             value={focusEntityId || ''}
             onChange={(e) => setFocusEntityId(e.target.value || null)}
-            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+            className="bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
           >
             <option value="">-- No Focus Selected --</option>
             {entities.map(e => (
@@ -195,7 +195,7 @@ export default function NetworkExplorer({
           <select
             value={depth}
             onChange={(e) => setDepth(Number(e.target.value))}
-            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none"
+            className="bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 focus:outline-none"
           >
             <option value={1}>1 Degree (Direct)</option>
             <option value={2}>2 Degrees (Standard)</option>
@@ -205,7 +205,7 @@ export default function NetworkExplorer({
       </div>
 
       {/* Ego Graph Display */}
-      <div className="flex-1 min-h-[480px] bg-white border border-slate-200 rounded-2xl relative flex items-center justify-center p-4">
+      <div className="flex-1 min-h-[480px] bg-white border border-slate-200 rounded-md relative flex items-center justify-center p-2">
         {focusEntityId && visualNetwork.nodes.length > 0 ? (
           <div className="relative w-full max-w-[500px] h-[500px] select-none">
             <svg
@@ -291,7 +291,7 @@ export default function NetworkExplorer({
 
             {/* Interactive Legend / Focus details overlay */}
             {focusEntity && (
-              <div className="absolute top-2 left-2 bg-white/95 border border-slate-200 p-3 rounded-xl max-w-[200px] backdrop-blur-sm pointer-events-auto">
+              <div className="absolute top-2 left-2 bg-white/95 border border-slate-200 p-2 rounded-md max-w-[200px] backdrop-blur-sm pointer-events-auto">
                 <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase mb-1 ${getTypeColor(focusEntity.type).bg}`}>
                   {focusEntity.type}
                 </span>
@@ -322,7 +322,7 @@ export default function NetworkExplorer({
             {entities.length > 0 && (
               <button
                 onClick={() => setFocusEntityId(entities[0].id)}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs hover:bg-slate-50 text-teal-600 font-bold transition-all"
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs hover:bg-slate-50 text-teal-600 font-bold transition-all"
               >
                 Start Explorer with {entities[0].name}
               </button>

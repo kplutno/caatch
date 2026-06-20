@@ -25,7 +25,7 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-1 px-4 py-3 border-t border-slate-100">
+    <div className="flex items-center justify-center gap-1 px-3 py-2 border-t border-slate-100">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -104,7 +104,7 @@ export default function ConnectionsLedger({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">Established Relations</h2>
         <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded">
@@ -112,11 +112,11 @@ export default function ConnectionsLedger({
         </span>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-slate-400 text-sm animate-pulse">Loading…</div>
         ) : data.items.length === 0 ? (
-          <div className="p-12 text-center text-slate-550 text-sm">
+          <div className="p-8 text-center text-slate-550 text-sm">
             No connections established yet. Create connections using the side panel!
           </div>
         ) : (
