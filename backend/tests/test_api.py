@@ -134,17 +134,15 @@ async def test_delete_entity_cascades_connections(client: AsyncClient):
     e2 = (
         await client.post("/api/entities", json={"name": "Node B", "type": "person"})
     ).json()
-    conn = (
-        await client.post(
-            "/api/connections",
-            json={
-                "source_id": e1["id"],
-                "target_id": e2["id"],
-                "label": "CONTAINS",
-                "properties": {},
-            },
-        )
-    ).json()
+    await client.post(
+        "/api/connections",
+        json={
+            "source_id": e1["id"],
+            "target_id": e2["id"],
+            "label": "CONTAINS",
+            "properties": {},
+        },
+    )
 
     # Delete Node A
     del_resp = await client.delete(f"/api/entities/{e1['id']}")
@@ -229,3 +227,46 @@ async def test_network_graph_traversal_empty(client: AsyncClient):
     non_existent_uuid = str(uuid.uuid4())
     resp = await client.get(f"/api/entities/{non_existent_uuid}/network")
     assert resp.status_code == 404
+
+
+async def test_get_connection_rules(client: AsyncClient):
+    resp = await client.get("/api/connections/rules")
+    assert resp.status_code == 200
+    rules = resp.json()
+    assert "person" in rules
+    assert "KNOWS" in rules["person"]
+    assert "person" in rules["person"]["KNOWS"]
+
+
+async def test_connection_validation_rules(client: AsyncClient):
+    # Create person
+    person_resp = await client.post("/api/entities", json={"name": "Alice", "type": "person"})
+    p_id = person_resp.json()["id"]
+
+    # Create place
+    place_resp = await client.post("/api/entities", json={"name": "Paris", "type": "place"})
+    pl_id = place_resp.json()["id"]
+
+    # 1. Valid link: person LIVES_IN place
+    valid_conn = {
+        "source_id": p_id,
+        "target_id": pl_id,
+        "label": "LIVES_IN",
+        "properties": {}
+    }
+    resp = await client.post("/api/connections", json=valid_conn)
+    assert resp.status_code == 200
+
+    # 2. Invalid link: person LIVES_IN person (disallowed target type)
+    person2_resp = await client.post("/api/entities", json={"name": "Bob", "type": "person"})
+    p2_id = person2_resp.json()["id"]
+    invalid_conn = {
+        "source_id": p_id,
+        "target_id": p2_id,
+        "label": "LIVES_IN",
+        "properties": {}
+    }
+    resp = await client.post("/api/connections", json=invalid_conn)
+    assert resp.status_code == 400
+    assert "are not allowed" in resp.json()["detail"]
+

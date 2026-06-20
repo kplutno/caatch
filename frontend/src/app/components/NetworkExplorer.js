@@ -1,0 +1,321 @@
+'use client';
+
+import { useMemo, useState, useEffect, useRef } from 'react';
+import { RELATION_NAMES, getTypeColor } from './constants';
+
+export default function NetworkExplorer({
+  entities,
+  focusEntityId,
+  setFocusEntityId,
+  depth,
+  setDepth,
+  focusNetwork
+}) {
+  const svgRef = useRef(null);
+
+  // Keep track of positions of nodes. Key: node.id, Value: {x, y}
+  const [positions, setPositions] = useState({});
+  // Keep track of which node is currently being dragged
+  const [draggedNodeId, setDraggedNodeId] = useState(null);
+
+  // Find targeted entity info helper
+  const focusEntity = useMemo(() => {
+    return entities.find(e => e.id === focusEntityId) || null;
+  }, [entities, focusEntityId]);
+
+  // Recalculate initial layout only when the focus entity or network nodes change
+  useEffect(() => {
+    if (!focusEntityId || !focusNetwork.nodes || focusNetwork.nodes.length === 0) {
+      setPositions({});
+      return;
+    }
+
+    const newPositions = {};
+    const width = 500;
+    
+    // Categorize nodes
+    const places = [];
+    const organizations = [];
+    const others = []; // persons, events, others
+
+    focusNetwork.nodes.forEach(node => {
+      if (node.type === 'place') {
+        places.push(node);
+      } else if (node.type === 'organization') {
+        organizations.push(node);
+      } else {
+        others.push(node);
+      }
+    });
+
+    // Helper to distribute nodes horizontally across a row
+    const layRow = (rowNodes, yCoordinate) => {
+      if (rowNodes.length === 0) return;
+      if (rowNodes.length === 1) {
+        newPositions[rowNodes[0].id] = { x: width / 2, y: yCoordinate };
+      } else {
+        const step = (width - 100) / (rowNodes.length - 1);
+        rowNodes.forEach((node, idx) => {
+          newPositions[node.id] = {
+            x: 50 + idx * step,
+            y: yCoordinate
+          };
+        });
+      }
+    };
+
+    // Layer 1 (Top): Places (y = 100)
+    layRow(places, 100);
+
+    // Layer 2 (Middle): Organizations (y = 250)
+    layRow(organizations, 250);
+
+    // Layer 3 (Bottom): Persons, Events, Others (y = 400)
+    layRow(others, 400);
+
+    setPositions(newPositions);
+  }, [focusEntityId, focusNetwork.nodes]);
+
+  // Handle Drag Events
+  const handleMouseDown = (e, nodeId) => {
+    e.preventDefault();
+    setDraggedNodeId(nodeId);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!draggedNodeId || !svgRef.current) return;
+
+    const rect = svgRef.current.getBoundingClientRect();
+    
+    // Convert client coordinates to SVG viewbox coordinates (500x500 scaling)
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
+
+    if (clientX === undefined || clientY === undefined) return;
+
+    const svgX = ((clientX - rect.left) / rect.width) * 500;
+    const svgY = ((clientY - rect.top) / rect.height) * 500;
+
+    // Keep nodes inside bounds [20, 480] to prevent disappearing off-screen
+    const boundedX = Math.max(20, Math.min(480, svgX));
+    const boundedY = Math.max(20, Math.min(480, svgY));
+
+    setPositions(prev => ({
+      ...prev,
+      [draggedNodeId]: { x: boundedX, y: boundedY }
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setDraggedNodeId(null);
+  };
+
+  // Add global mouse listeners to make dragging smooth outside of the node bounds
+  useEffect(() => {
+    if (draggedNodeId) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleMouseMove);
+      window.addEventListener('touchend', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('touchend', handleMouseUp);
+    };
+  }, [draggedNodeId]);
+
+  // Form coordinates for nodes and links
+  const visualNetwork = useMemo(() => {
+    if (!focusEntityId || focusNetwork.nodes.length === 0) return { nodes: [], edges: [] };
+
+    const nodes = focusNetwork.nodes.map(node => {
+      const pos = positions[node.id] || { x: 250, y: 250 };
+      return {
+        ...node,
+        x: pos.x,
+        y: pos.y,
+        isCenter: node.id === focusEntityId
+      };
+    });
+
+    const edges = [];
+    focusNetwork.edges.forEach(edge => {
+      const sourceNode = nodes.find(n => n.id === edge.source_id);
+      const targetNode = nodes.find(n => n.id === edge.target_id);
+      if (sourceNode && targetNode) {
+        edges.push({
+          ...edge,
+          x1: sourceNode.x,
+          y1: sourceNode.y,
+          x2: targetNode.x,
+          y2: targetNode.y
+        });
+      }
+    });
+
+    return { nodes, edges };
+  }, [focusEntityId, focusNetwork, positions]);
+
+  return (
+    <div className="flex-1 flex flex-col space-y-3">
+      {/* Explorer Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+        <div className="flex items-center gap-3">
+          <label className="text-xs text-slate-500">Select Focus Entity:</label>
+          <select
+            value={focusEntityId || ''}
+            onChange={(e) => setFocusEntityId(e.target.value || null)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+          >
+            <option value="">-- No Focus Selected --</option>
+            {entities.map(e => (
+              <option key={e.id} value={e.id}>{e.name} ({e.type})</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-slate-500">Scan Depth:</label>
+          <select
+            value={depth}
+            onChange={(e) => setDepth(Number(e.target.value))}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none"
+          >
+            <option value={1}>1 Degree (Direct)</option>
+            <option value={2}>2 Degrees (Standard)</option>
+            <option value={3}>3 Degrees (Distant)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Ego Graph Display */}
+      <div className="flex-1 min-h-[480px] bg-white border border-slate-200 rounded-2xl relative flex items-center justify-center p-4">
+        {focusEntityId && visualNetwork.nodes.length > 0 ? (
+          <div className="relative w-full max-w-[500px] h-[500px] select-none">
+            <svg
+              ref={svgRef}
+              viewBox="0 0 500 500"
+              className="w-full h-full"
+            >
+              {/* Connection Lines */}
+              {visualNetwork.edges.map((edge, idx) => (
+                <g key={idx}>
+                  <line
+                    x1={edge.x1}
+                    y1={edge.y1}
+                    x2={edge.x2}
+                    y2={edge.y2}
+                    stroke="rgba(148, 163, 184, 0.4)"
+                    strokeWidth="1.5"
+                  />
+                  {/* Label on link */}
+                  <foreignObject
+                    x={(edge.x1 + edge.x2) / 2 - 40}
+                    y={(edge.y1 + edge.y2) / 2 - 10}
+                    width="80"
+                    height="20"
+                  >
+                    <div className="bg-slate-50 border border-slate-200 rounded text-[9px] font-semibold text-slate-500 py-0.5 px-1 text-center truncate leading-none">
+                      {RELATION_NAMES[edge.label] || edge.label}
+                    </div>
+                  </foreignObject>
+                </g>
+              ))}
+
+              {/* Nodes */}
+              {visualNetwork.nodes.map((node, idx) => {
+                const style = getTypeColor(node.type);
+                return (
+                  <g
+                    key={idx}
+                    className="cursor-grab active:cursor-grabbing group"
+                    onMouseDown={(e) => handleMouseDown(e, node.id)}
+                    onTouchStart={(e) => handleMouseDown(e, node.id)}
+                  >
+                    {/* Circle Node (simplified flat style) */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={node.isCenter ? 14 : 10}
+                      fill={node.isCenter ? '#0d9488' : '#e2e8f0'}
+                      stroke={node.isCenter ? '#0f766e' : '#cbd5e1'}
+                      strokeWidth="1.5"
+                    />
+                    
+                    {/* Simplified Node Label Display (aligned closer to node) */}
+                    <foreignObject
+                      x={node.x - 60}
+                      y={node.y + (node.isCenter ? 18 : 14)}
+                      width="120"
+                      height="28"
+                    >
+                      <div className="text-center">
+                        <p className={`text-[10px] font-semibold truncate ${node.isCenter ? 'text-teal-800 font-bold' : 'text-slate-700'}`}>
+                          {node.name}
+                        </p>
+                        <p className="text-[8px] text-slate-400 uppercase tracking-wider">
+                          {node.type}
+                        </p>
+                      </div>
+                    </foreignObject>
+                    
+                    {/* Double-Click action to focus node */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={24}
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onDoubleClick={() => setFocusEntityId(node.id)}
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Interactive Legend / Focus details overlay */}
+            {focusEntity && (
+              <div className="absolute top-2 left-2 bg-white/95 border border-slate-200 p-3 rounded-xl max-w-[200px] backdrop-blur-sm pointer-events-auto">
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase mb-1 ${getTypeColor(focusEntity.type).bg}`}>
+                  {focusEntity.type}
+                </span>
+                <h3 className="text-xs font-bold text-slate-900">{focusEntity.name}</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">
+                  {focusEntity.description || 'No description.'}
+                </p>
+
+                {Object.keys(focusEntity.properties || {}).length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-slate-100 space-y-0.5 max-h-20 overflow-y-auto">
+                    {Object.entries(focusEntity.properties).map(([k, v]) => (
+                      <div key={k} className="flex justify-between text-[8px] font-medium text-slate-400">
+                        <span>{k}:</span>
+                        <span className="text-slate-600 text-right font-semibold">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2 text-[8px] text-slate-400 italic border-t border-slate-100 pt-1 text-center">
+                  Drag nodes to rearrange. Double click to focus.
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center space-y-3">
+            <p className="text-slate-500 text-sm">Select an entity to explore its relationship network.</p>
+            {entities.length > 0 && (
+              <button
+                onClick={() => setFocusEntityId(entities[0].id)}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs hover:bg-slate-50 text-teal-600 font-bold transition-all"
+              >
+                Start Explorer with {entities[0].name}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

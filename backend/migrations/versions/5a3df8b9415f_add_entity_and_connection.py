@@ -32,7 +32,7 @@ def upgrade() -> None:
     op.create_table(
         "entity",
         sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),  # type: ignore[attr-defined]
         sa.Column(
             "type",
             sa.Enum(
@@ -46,7 +46,7 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # type: ignore[attr-defined]
         sa.Column(
             "properties", postgresql.JSONB(astext_type=sa.Text()), nullable=False
         ),
@@ -60,8 +60,8 @@ def upgrade() -> None:
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("source_id", sa.UUID(), nullable=False),
         sa.Column("target_id", sa.UUID(), nullable=False),
-        sa.Column("label", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("label", sqlmodel.sql.sqltypes.AutoString(), nullable=False),  # type: ignore[attr-defined]
+        sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # type: ignore[attr-defined]
         sa.Column(
             "properties", postgresql.JSONB(astext_type=sa.Text()), nullable=False
         ),

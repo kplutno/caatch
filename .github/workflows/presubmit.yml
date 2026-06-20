@@ -28,13 +28,11 @@ jobs:
         working-directory: ./backend
         run: poetry install
 
-      - name: Run Code Formatter Check (Black)
+      - name: Run Linter & Formatter (Ruff)
         working-directory: ./backend
-        run: poetry run black --check .
-
-      - name: Run Linter (Ruff)
-        working-directory: ./backend
-        run: poetry run ruff check .
+        run: |
+          poetry run ruff check .
+          poetry run ruff format --check .
 
       - name: Run Type Checker (Mypy)
         working-directory: ./backend

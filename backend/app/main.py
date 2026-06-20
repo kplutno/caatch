@@ -147,6 +147,13 @@ async def delete_entity(
 # --- Connections CRUD ---
 
 
+@app.get("/api/connections/rules")
+async def get_connection_rules():
+    from app.models import ALLOWED_CONNECTIONS
+    # Format rules nicely for the frontend: source_type -> label -> list of target_types
+    return ALLOWED_CONNECTIONS
+
+
 @app.post("/api/connections", response_model=ConnectionRead)
 async def create_connection(
     connection: ConnectionCreate, session: AsyncSession = Depends(get_session)
@@ -157,6 +164,22 @@ async def create_connection(
     if not source or not target:
         raise HTTPException(
             status_code=400, detail="Source or target entity does not exist"
+        )
+
+    # Perform connection validation based on entity types and connection label
+    from app.models import ALLOWED_CONNECTIONS
+    source_rules = ALLOWED_CONNECTIONS.get(source.type)
+    if not source_rules or connection.label not in source_rules:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Connections of type '{connection.label}' are not allowed originating from a '{source.type}' entity."
+        )
+
+    allowed_targets = source_rules[connection.label]
+    if target.type not in allowed_targets:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Connections of type '{connection.label}' from '{source.type}' to '{target.type}' are not allowed. Allowed targets: {', '.join([t.value for t in allowed_targets])}."
         )
 
     db_connection = Connection.model_validate(connection)
@@ -239,13 +262,16 @@ async def get_entity_network(
         node_ids = [entity_id]
 
     # 2. Fetch the corresponding entities
-    entities_stmt = select(Entity).where(Entity.id.in_(node_ids))
+    from sqlmodel import col
+
+    entities_stmt = select(Entity).where(col(Entity.id).in_(node_ids))
     entities_res = await session.exec(entities_stmt)
     nodes = entities_res.all()
 
     # 3. Fetch all connections among these nodes
     connections_stmt = select(Connection).where(
-        Connection.source_id.in_(node_ids) & Connection.target_id.in_(node_ids)
+        col(Connection.source_id).in_(node_ids)
+        & col(Connection.target_id).in_(node_ids)
     )
     connections_res = await session.exec(connections_stmt)
     edges = connections_res.all()
