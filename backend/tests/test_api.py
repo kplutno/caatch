@@ -432,3 +432,271 @@ async def test_get_entity_network_empty_and_valid(client: AsyncClient):
     assert len(data["nodes"]) == 1
     assert data["nodes"][0]["id"] == e1["id"]
     assert len(data["edges"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# Additional integration tests — covering remaining api/* module lines
+# ---------------------------------------------------------------------------
+
+
+async def test_create_and_read_all_entity_types(client: AsyncClient):
+    """Ensure every EntityType can be created and retrieved individually."""
+    entity_types = ["person", "organization", "place", "event", "other"]
+    created_ids = []
+    for et in entity_types:
+        resp = await client.post(
+            "/api/entities", json={"name": f"Test {et}", "type": et}
+        )
+        assert resp.status_code == 200, f"Failed for type {et}: {resp.text}"
+        data = resp.json()
+        assert data["type"] == et
+        created_ids.append((et, data["id"]))
+
+    # Read each entity individually by ID
+    for et, eid in created_ids:
+        resp = await client.get(f"/api/entities/{eid}")
+        assert resp.status_code == 200
+        assert resp.json()["type"] == et
+        assert resp.json()["id"] == eid
+
+
+async def test_filter_entities_by_each_type(client: AsyncClient):
+    """?type= filter should work for every EntityType."""
+    entity_types = ["person", "organization", "place", "event", "other"]
+    for et in entity_types:
+        await client.post("/api/entities", json={"name": f"Filter {et}", "type": et})
+
+    for et in entity_types:
+        resp = await client.get(f"/api/entities?type={et}")
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 1
+        assert results[0]["type"] == et
+
+
+async def test_read_all_entities_unfiltered(client: AsyncClient):
+    """GET /api/entities with no filter returns all entities."""
+    names = ["Alpha", "Beta", "Gamma"]
+    for name in names:
+        await client.post("/api/entities", json={"name": name, "type": "other"})
+
+    resp = await client.get("/api/entities")
+    assert resp.status_code == 200
+    assert len(resp.json()) == len(names)
+
+
+async def test_update_entity_partial_fields(client: AsyncClient):
+    """Updating only the description leaves other fields intact."""
+    create = (
+        await client.post(
+            "/api/entities",
+            json={"name": "Stable", "type": "person", "properties": {"x": 1}},
+        )
+    ).json()
+    eid = create["id"]
+
+    update_resp = await client.put(
+        f"/api/entities/{eid}",
+        json={"name": "Stable", "type": "person", "description": "Updated bio"},
+    )
+    assert update_resp.status_code == 200
+    data = update_resp.json()
+    assert data["description"] == "Updated bio"
+    assert data["name"] == "Stable"
+
+
+async def test_delete_entity_no_connections(client: AsyncClient):
+    """Deleting an entity with no connections should succeed cleanly."""
+    e = (
+        await client.post("/api/entities", json={"name": "Lonely", "type": "other"})
+    ).json()
+
+    del_resp = await client.delete(f"/api/entities/{e['id']}")
+    assert del_resp.status_code == 200
+
+    get_resp = await client.get(f"/api/entities/{e['id']}")
+    assert get_resp.status_code == 404
+
+
+async def test_read_connections_list(client: AsyncClient):
+    """GET /api/connections returns all existing connections."""
+    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
+    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+
+    await client.post(
+        "/api/connections",
+        json={"source_id": p["id"], "target_id": pl["id"], "label": "LIVES_IN"},
+    )
+
+    resp = await client.get("/api/connections")
+    assert resp.status_code == 200
+    conns = resp.json()
+    assert len(conns) == 1
+    assert conns[0]["label"] == "LIVES_IN"
+
+
+async def test_connection_with_description(client: AsyncClient):
+    """Connection description field is persisted and returned."""
+    p = (await client.post("/api/entities", json={"name": "A", "type": "person"})).json()
+    pl = (await client.post("/api/entities", json={"name": "B", "type": "place"})).json()
+
+    conn = (
+        await client.post(
+            "/api/connections",
+            json={
+                "source_id": p["id"],
+                "target_id": pl["id"],
+                "label": "LIVES_IN",
+                "description": "Born and raised here",
+            },
+        )
+    ).json()
+    assert conn["description"] == "Born and raised here"
+
+
+async def test_connection_knows_person_to_person(client: AsyncClient):
+    """person KNOWS person is a valid connection."""
+    p1 = (await client.post("/api/entities", json={"name": "Bob", "type": "person"})).json()
+    p2 = (await client.post("/api/entities", json={"name": "Carol", "type": "person"})).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": p1["id"], "target_id": p2["id"], "label": "KNOWS"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["label"] == "KNOWS"
+
+
+async def test_connection_works_with_person_to_person(client: AsyncClient):
+    """person WORKS_WITH person is a valid connection."""
+    p1 = (await client.post("/api/entities", json={"name": "Dave", "type": "person"})).json()
+    p2 = (await client.post("/api/entities", json={"name": "Eve", "type": "person"})).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": p1["id"], "target_id": p2["id"], "label": "WORKS_WITH"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_attended_person_to_event(client: AsyncClient):
+    """person ATTENDED event is a valid connection."""
+    p = (await client.post("/api/entities", json={"name": "Frank", "type": "person"})).json()
+    ev = (await client.post("/api/entities", json={"name": "Summit", "type": "event"})).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": p["id"], "target_id": ev["id"], "label": "ATTENDED"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_participated_in_person_to_event(client: AsyncClient):
+    """person PARTICIPATED_IN event is a valid connection."""
+    p = (await client.post("/api/entities", json={"name": "Grace", "type": "person"})).json()
+    ev = (await client.post("/api/entities", json={"name": "Marathon", "type": "event"})).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": p["id"], "target_id": ev["id"], "label": "PARTICIPATED_IN"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_organization_located_in_place(client: AsyncClient):
+    """organization LOCATED_IN place is a valid connection."""
+    org = (
+        await client.post("/api/entities", json={"name": "ACME Corp", "type": "organization"})
+    ).json()
+    place = (
+        await client.post("/api/entities", json={"name": "New York", "type": "place"})
+    ).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": org["id"], "target_id": place["id"], "label": "LOCATED_IN"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_event_located_in_place(client: AsyncClient):
+    """event LOCATED_IN place is a valid connection."""
+    ev = (
+        await client.post("/api/entities", json={"name": "Conference", "type": "event"})
+    ).json()
+    place = (
+        await client.post("/api/entities", json={"name": "Berlin", "type": "place"})
+    ).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": ev["id"], "target_id": place["id"], "label": "LOCATED_IN"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_other_entity_other_label(client: AsyncClient):
+    """entity of type 'other' can use label OTHER."""
+    o1 = (await client.post("/api/entities", json={"name": "X", "type": "other"})).json()
+    o2 = (await client.post("/api/entities", json={"name": "Y", "type": "other"})).json()
+
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": o1["id"], "target_id": o2["id"], "label": "OTHER"},
+    )
+    assert resp.status_code == 200
+
+
+async def test_connection_invalid_label_for_source_type(client: AsyncClient):
+    """A label not defined for the source type should return 400."""
+    o = (await client.post("/api/entities", json={"name": "X", "type": "other"})).json()
+    p = (await client.post("/api/entities", json={"name": "Y", "type": "person"})).json()
+
+    # 'other' type only supports OTHER label — KNOWS should be rejected
+    resp = await client.post(
+        "/api/connections",
+        json={"source_id": o["id"], "target_id": p["id"], "label": "KNOWS"},
+    )
+    assert resp.status_code == 400
+    assert "not allowed" in resp.json()["detail"]
+
+
+async def test_full_graph_with_data(client: AsyncClient):
+    """GET /api/graph returns nodes and edges when data exists."""
+    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
+    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+    await client.post(
+        "/api/connections",
+        json={"source_id": p["id"], "target_id": pl["id"], "label": "LIVES_IN"},
+    )
+
+    resp = await client.get("/api/graph")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["nodes"]) == 2
+    assert len(data["edges"]) == 1
+
+
+async def test_bidirectional_network_traversal(client: AsyncClient):
+    """Network traversal must find nodes connected to the anchor in any direction."""
+    # A -- B: B is only reachable because connection target → A is bidirectional
+    a = (await client.post("/api/entities", json={"name": "A", "type": "person"})).json()
+    b = (await client.post("/api/entities", json={"name": "B", "type": "person"})).json()
+
+    await client.post(
+        "/api/connections",
+        json={"source_id": b["id"], "target_id": a["id"], "label": "KNOWS"},  # B → A
+    )
+
+    # Ask for A's network at depth=1; should still find B (it's connected TO A)
+    resp = await client.get(f"/api/entities/{a['id']}/network?depth=1")
+    assert resp.status_code == 200
+    node_ids = [n["id"] for n in resp.json()["nodes"]]
+    assert b["id"] in node_ids
+
+
+async def test_greet_default_name(client: AsyncClient):
+    """GET /api/greet without ?name should use the default 'World'."""
+    resp = await client.get("/api/greet")
+    assert resp.status_code == 200
+    assert resp.json() == {"message": "Hello, World! Welcome to Caatch."}
