@@ -24,6 +24,7 @@ pytest-asyncio = "^1.4.0"
 aiosqlite = "^0.22.1"
 mypy = "^1.8.0"
 types-requests = "^2.31.0.0"
+pytest-cov = "^7.1.0"
 
 
 [build-system]

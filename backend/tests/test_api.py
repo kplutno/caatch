@@ -270,3 +270,141 @@ async def test_connection_validation_rules(client: AsyncClient):
     assert resp.status_code == 400
     assert "are not allowed" in resp.json()["detail"]
 
+
+# --- New coverage tests ---
+
+async def test_greet_endpoint(client: AsyncClient):
+    resp = await client.get("/api/greet?name=Gemini")
+    assert resp.status_code == 200
+    assert resp.json() == {"message": "Hello, Gemini! Welcome to Caatch."}
+
+
+async def test_user_crud(client: AsyncClient):
+    # 1. Read empty users list
+    resp = await client.get("/api/users")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+    # 2. Create user
+    user_payload = {"name": "Test User", "email": "test@example.com"}
+    resp = await client.post("/api/users", json=user_payload)
+    assert resp.status_code == 200
+    user_data = resp.json()
+    assert user_data["name"] == "Test User"
+    assert "id" in user_data
+
+    # 3. Prevent duplicate emails
+    resp = await client.post("/api/users", json=user_payload)
+    assert resp.status_code == 400
+    assert "Email already exists" in resp.json()["detail"]
+
+    # 4. Read list again
+    resp = await client.get("/api/users")
+    assert len(resp.json()) == 1
+
+
+async def test_update_nonexistent_entity(client: AsyncClient):
+    non_existent = str(uuid.uuid4())
+    payload = {"name": "No One", "type": "person"}
+    resp = await client.put(f"/api/entities/{non_existent}", json=payload)
+    assert resp.status_code == 404
+
+
+async def test_delete_nonexistent_entity(client: AsyncClient):
+    non_existent = str(uuid.uuid4())
+    resp = await client.delete(f"/api/entities/{non_existent}")
+    assert resp.status_code == 404
+
+
+async def test_ego_network_multidegree(client: AsyncClient):
+    # Setup chain: Person A -> Org B -> Place C
+    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
+    e2 = (await client.post("/api/entities", json={"name": "Org X", "type": "organization"})).json()
+    e3 = (await client.post("/api/entities", json={"name": "Location Y", "type": "place"})).json()
+
+    await client.post("/api/connections", json={
+        "source_id": e1["id"],
+        "target_id": e2["id"],
+        "label": "MEMBER_OF"
+    })
+    await client.post("/api/connections", json={
+        "source_id": e2["id"],
+        "target_id": e3["id"],
+        "label": "LOCATED_IN"
+    })
+
+    # Depth 1: Should only return Alice and Org X
+    resp1 = await client.get(f"/api/entities/{e1['id']}/network?depth=1")
+    assert resp1.status_code == 200
+    nodes1 = [n["id"] for n in resp1.json()["nodes"]]
+    assert e1["id"] in nodes1
+    assert e2["id"] in nodes1
+    assert e3["id"] not in nodes1
+
+    # Depth 2: Should return Alice, Org X, and Location Y
+    resp2 = await client.get(f"/api/entities/{e1['id']}/network?depth=2")
+    nodes2 = [n["id"] for n in resp2.json()["nodes"]]
+    assert e1["id"] in nodes2
+    assert e2["id"] in nodes2
+    assert e3["id"] in nodes2
+
+
+async def test_get_full_graph(client: AsyncClient):
+    resp = await client.get("/api/graph")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "nodes" in data
+    assert "edges" in data
+
+
+async def test_connection_invalid_labels(client: AsyncClient):
+    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
+    e2 = (await client.post("/api/entities", json={"name": "Org X", "type": "organization"})).json()
+    
+    # Try invalid connection label from person to organization
+    invalid_conn = {
+        "source_id": e1["id"],
+        "target_id": e2["id"],
+        "label": "LOCATED_IN",  # Person cannot LOCATED_IN an Organization
+        "properties": {}
+    }
+    resp = await client.post("/api/connections", json=invalid_conn)
+    assert resp.status_code == 400
+
+
+async def test_database_get_session_direct():
+    from app.database import get_session
+    async for session in get_session():
+        assert session is not None
+        break
+
+
+async def test_delete_connection_success(client: AsyncClient):
+    # Setup connection
+    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
+    e2 = (await client.post("/api/entities", json={"name": "Paris", "type": "place"})).json()
+    conn = (await client.post("/api/connections", json={
+        "source_id": e1["id"],
+        "target_id": e2["id"],
+        "label": "LIVES_IN"
+    })).json()
+
+    # Delete connection
+    resp = await client.delete(f"/api/connections/{conn['id']}")
+    assert resp.status_code == 200
+    assert resp.json() == {"message": "Connection deleted successfully"}
+
+
+async def test_get_entity_network_empty_and_valid(client: AsyncClient):
+    e1 = (await client.post("/api/entities", json={"name": "Alice", "type": "person"})).json()
+    
+    # Ego network for entity with no connections
+    resp = await client.get(f"/api/entities/{e1['id']}/network?depth=1")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["nodes"]) == 1
+    assert data["nodes"][0]["id"] == e1["id"]
+    assert len(data["edges"]) == 0
+
+
+

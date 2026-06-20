@@ -33,20 +33,33 @@ export default function NetworkExplorer({
     const newPositions = {};
     const width = 500;
     
+    // Count neighbors (connections/children) for each node inside focusNetwork
+    const getConnectionCount = (nodeId) => {
+      return focusNetwork.edges.filter(
+        edge => edge.source_id === nodeId || edge.target_id === nodeId
+      ).length;
+    };
+
     // Categorize nodes
     const places = [];
     const organizations = [];
     const others = []; // persons, events, others
 
     focusNetwork.nodes.forEach(node => {
+      const nodeWithCount = { ...node, degree: getConnectionCount(node.id) };
       if (node.type === 'place') {
-        places.push(node);
+        places.push(nodeWithCount);
       } else if (node.type === 'organization') {
-        organizations.push(node);
+        organizations.push(nodeWithCount);
       } else {
-        others.push(node);
+        others.push(nodeWithCount);
       }
     });
+
+    // Sort rows: nodes with higher degrees come first (higher precedence/order)
+    places.sort((a, b) => b.degree - a.degree);
+    organizations.sort((a, b) => b.degree - a.degree);
+    others.sort((a, b) => b.degree - a.degree);
 
     // Helper to distribute nodes horizontally across a row
     const layRow = (rowNodes, yCoordinate) => {
@@ -58,7 +71,8 @@ export default function NetworkExplorer({
         rowNodes.forEach((node, idx) => {
           newPositions[node.id] = {
             x: 50 + idx * step,
-            y: yCoordinate
+            // Add a small upward vertical shift (up to -20px) based on node rank/degree
+            y: yCoordinate - Math.min(20, node.degree * 4)
           };
         });
       }
@@ -74,7 +88,7 @@ export default function NetworkExplorer({
     layRow(others, 400);
 
     setPositions(newPositions);
-  }, [focusEntityId, focusNetwork.nodes]);
+  }, [focusEntityId, focusNetwork.nodes, focusNetwork.edges]);
 
   // Handle Drag Events
   const handleMouseDown = (e, nodeId) => {
