@@ -289,32 +289,6 @@ export default function NetworkExplorer({
               })}
             </svg>
 
-            {/* Interactive Legend / Focus details overlay */}
-            {focusEntity && (
-              <div className="absolute top-2 left-2 bg-white/95 border border-slate-200 p-2 rounded-md max-w-[200px] backdrop-blur-sm pointer-events-auto">
-                <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase mb-1 ${getTypeColor(focusEntity.type).bg}`}>
-                  {focusEntity.type}
-                </span>
-                <h3 className="text-xs font-bold text-slate-900">{focusEntity.name}</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">
-                  {focusEntity.description || 'No description.'}
-                </p>
-
-                {Object.keys(focusEntity.properties || {}).length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-slate-100 space-y-0.5 max-h-20 overflow-y-auto">
-                    {Object.entries(focusEntity.properties).map(([k, v]) => (
-                      <div key={k} className="flex justify-between text-[8px] font-medium text-slate-400">
-                        <span>{k}:</span>
-                        <span className="text-slate-600 text-right font-semibold">{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-2 text-[8px] text-slate-400 italic border-t border-slate-100 pt-1 text-center">
-                  Drag nodes to rearrange. Double click to focus.
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className="text-center space-y-3">
