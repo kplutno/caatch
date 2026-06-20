@@ -18,13 +18,15 @@ if config.config_file_name is not None:
 
 import os
 from sqlmodel import SQLModel
-from app.models import User, Entity, Connection # Import all models here
+from app.models import Connection  # Import all models here
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 target_metadata = SQLModel.metadata
 
-db_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/caatch")
+db_url = os.getenv(
+    "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/caatch"
+)
 config.set_main_option("sqlalchemy.url", db_url)
 
 # other values from the config, defined by the needs of env.py,

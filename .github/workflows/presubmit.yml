@@ -1,0 +1,105 @@
+name: PR Verification (Presubmit)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  backend-lint-test:
+    name: Backend Lint, Type Check & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install Python Dependencies
+        working-directory: ./backend
+        run: poetry install
+
+      - name: Run Code Formatter Check (Black)
+        working-directory: ./backend
+        run: poetry run black --check .
+
+      - name: Run Linter (Ruff)
+        working-directory: ./backend
+        run: poetry run ruff check .
+
+      - name: Run Type Checker (Mypy)
+        working-directory: ./backend
+        run: poetry run mypy . --ignore-missing-imports
+
+      - name: Run Async Backend Unit Tests (Pytest)
+        working-directory: ./backend
+        run: poetry run pytest tests/ -v
+
+  frontend-lint-build:
+    name: Frontend Lint & Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run Linter (ESLint)
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Build Check
+        working-directory: ./frontend
+        run: npm run build
+
+  integration-tests:
+    name: K8s Integration Tests (Kind)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create local Kind Cluster
+        uses: helm/kind-action@v1.9.0
+        with:
+          cluster_name: desktop
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy Cluster Applications
+        run: |
+          chmod +x deploy.sh
+          ./deploy.sh dev
+
+      - name: Set up Python for Integration
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Test Requirements
+        run: pip install requests pytest
+
+      - name: Run Integration Tests
+        run: |
+          # Wait 10 seconds to ensure port-forwarding channels are initialized
+          sleep 10
+          pytest tests/integration/ -v
