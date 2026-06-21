@@ -118,15 +118,46 @@ if $RUN_INTEGRATION; then
   echo -e "\n${BOLD}━━━ Integration Tests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
   echo -e "${YELLOW}  ⚠  Requires a running Kind cluster named 'desktop' and Helm.${RESET}"
 
-  step "Deploying to local Kind cluster"
-  if (cd "$REPO_ROOT" && chmod +x deploy.sh && ./deploy.sh dev); then
+  INTEG_TAG="local-$(date +%Y%m%d-%H%M%S)"
+
+  step "Building & deploying to local Kind cluster (tag: $INTEG_TAG)"
+  if (cd "$REPO_ROOT" && chmod +x deploy.sh && ./deploy.sh dev "$INTEG_TAG"); then
     ok "deploy.sh dev"
   else
     fail "deploy.sh dev"
   fi
 
+  step "Waiting for deployments to become available"
+  if kubectl wait deployment/caatch-backend  --for=condition=available --timeout=120s && \
+     kubectl wait deployment/caatch-frontend --for=condition=available --timeout=120s; then
+    ok "kubectl wait (deployments ready)"
+  else
+    fail "kubectl wait (deployments timed out)"
+  fi
+
+  step "Starting port-forwarding"
+  nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 >/dev/null 2>&1 &
+  nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 >/dev/null 2>&1 &
+  ok "port-forwarding started"
+
+  step "Polling backend health endpoint"
+  READY=false
+  for i in $(seq 1 30); do
+    if curl -sf http://localhost:8000/api/health >/dev/null 2>&1; then
+      READY=true
+      break
+    fi
+    echo "  Attempt $i/30 — not ready yet, retrying in 2s..."
+    sleep 2
+  done
+  if $READY; then
+    ok "backend health check"
+  else
+    fail "backend health check (timed out after 60s)"
+  fi
+
   step "Running integration tests (pytest tests/integration/)"
-  if (cd "$REPO_ROOT" && sleep 10 && pip install --quiet requests pytest && pytest tests/integration/ -v); then
+  if (cd "$REPO_ROOT" && pip install --quiet requests pytest && pytest tests/integration/ -v); then
     ok "pytest integration tests"
   else
     fail "pytest integration tests"

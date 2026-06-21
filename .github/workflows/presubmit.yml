@@ -83,10 +83,41 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
 
-      - name: Deploy Cluster Applications
+      - name: Build & deploy to cluster
         run: |
           chmod +x deploy.sh
-          ./deploy.sh dev
+          # Pass an explicit tag so both images share the same value across steps
+          ./deploy.sh dev ci-${{ github.run_id }}
+
+      - name: Wait for deployments to become available
+        run: |
+          kubectl wait deployment/caatch-backend \
+            --for=condition=available \
+            --timeout=120s
+          kubectl wait deployment/caatch-frontend \
+            --for=condition=available \
+            --timeout=120s
+
+      - name: Start port-forwarding
+        run: |
+          nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 >/dev/null 2>&1 &
+          nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 >/dev/null 2>&1 &
+
+      - name: Wait for backend to accept connections
+        run: |
+          echo "Polling backend health endpoint..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/api/health > /dev/null; then
+              echo "Backend is ready."
+              exit 0
+            fi
+            echo "Attempt $i/30 — not ready yet, retrying in 2s..."
+            sleep 2
+          done
+          echo "Backend did not become ready in time."
+          kubectl describe pods
+          kubectl logs -l app=caatch-backend --tail=50
+          exit 1
 
       - name: Set up Python for Integration
         uses: actions/setup-python@v5
@@ -97,7 +128,4 @@ jobs:
         run: pip install requests pytest
 
       - name: Run Integration Tests
-        run: |
-          # Wait 10 seconds to ensure port-forwarding channels are initialized
-          sleep 10
-          pytest tests/integration/ -v
+        run: pytest tests/integration/ -v

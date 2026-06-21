@@ -39,7 +39,7 @@ helm upgrade --install caatch ./k8s \
   --set frontend.image.tag=$TAG
 
 # Automatically expose ports in dev environment
-if [ "$ENV" = "dev" ]; then
+if [ "$ENV" = "dev" ] && [ -z "$CI" ]; then
   echo "Waiting for deployments to be fully ready before mapping ports..."
   kubectl rollout status deployment/caatch-backend --timeout=60s
   kubectl rollout status deployment/caatch-frontend --timeout=60s
@@ -57,4 +57,3 @@ fi
 
 echo "Deployment complete! Run 'kubectl get pods' and 'kubectl get svc' to see the status."
 echo "Using image tag: $TAG"
-
