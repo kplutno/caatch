@@ -26,7 +26,9 @@ def upgrade() -> None:
     if bind.dialect.name == "postgresql":
         # Check if type exists first using pg_type to prevent DuplicateObjectError
         has_type = bind.execute(
-            sa.text("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'entitytype')")
+            sa.text(
+                "SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'entitytype')"
+            )
         ).scalar()
         if not has_type:
             op.execute(
