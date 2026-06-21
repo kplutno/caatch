@@ -32,7 +32,6 @@ ALLOWED_CONNECTIONS = {
             EntityType.event,
             EntityType.place,
             EntityType.organization,
-            EntityType.other,
         ],
     },
     EntityType.organization: {
@@ -42,7 +41,6 @@ ALLOWED_CONNECTIONS = {
             EntityType.event,
             EntityType.place,
             EntityType.organization,
-            EntityType.other,
         ],
     },
     EntityType.event: {
@@ -52,7 +50,6 @@ ALLOWED_CONNECTIONS = {
             EntityType.event,
             EntityType.place,
             EntityType.organization,
-            EntityType.other,
         ],
     },
     EntityType.place: {
@@ -62,17 +59,7 @@ ALLOWED_CONNECTIONS = {
             EntityType.event,
             EntityType.place,
             EntityType.organization,
-            EntityType.other,
         ],
-    },
-    EntityType.other: {
-        ConnectionLabel.OTHER: [
-            EntityType.person,
-            EntityType.event,
-            EntityType.place,
-            EntityType.organization,
-            EntityType.other,
-        ]
     },
 }
 

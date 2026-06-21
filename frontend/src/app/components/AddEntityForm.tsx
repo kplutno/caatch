@@ -2,9 +2,23 @@
 
 import { useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { EntityCreate } from '../types';
 
-export default function AddEntityForm({ onCreateEntity }) {
-  const [newEntity, setNewEntity] = useState({
+interface AddEntityFormProps {
+  onCreateEntity: (entity: EntityCreate) => Promise<boolean>;
+}
+
+interface NewEntityState {
+  name: string;
+  type: string;
+  description: string;
+  propKey: string;
+  propValue: string;
+  properties: Record<string, string>;
+}
+
+export default function AddEntityForm({ onCreateEntity }: AddEntityFormProps) {
+  const [newEntity, setNewEntity] = useState<NewEntityState>({
     name: '',
     type: 'person',
     description: '',
@@ -26,7 +40,7 @@ export default function AddEntityForm({ onCreateEntity }) {
     }));
   };
 
-  const removeProperty = (key) => {
+  const removeProperty = (key: string) => {
     setNewEntity(prev => {
       const updatedProps = { ...prev.properties };
       delete updatedProps[key];
@@ -34,7 +48,7 @@ export default function AddEntityForm({ onCreateEntity }) {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEntity.name.trim()) return;
     
@@ -84,7 +98,6 @@ export default function AddEntityForm({ onCreateEntity }) {
             <option value="event">Event</option>
             <option value="place">Place</option>
             <option value="organization">Organization</option>
-            <option value="other">Other</option>
           </select>
         </div>
 

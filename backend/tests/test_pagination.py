@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 async def test_entities_pagination_envelope(client: AsyncClient):
     """GET /api/entities returns a paginated envelope with correct metadata."""
     for i in range(5):
-        await client.post("/api/entities", json={"name": f"E{i}", "type": "other"})
+        await client.post("/api/entities", json={"name": f"E{i}", "type": "person"})
 
     resp = await client.get("/api/entities?page=1&page_size=3")
     assert resp.status_code == 200
@@ -27,7 +27,7 @@ async def test_entities_pagination_envelope(client: AsyncClient):
 async def test_entities_pagination_second_page(client: AsyncClient):
     """Second page of entities contains the remaining items."""
     for i in range(5):
-        await client.post("/api/entities", json={"name": f"E{i}", "type": "other"})
+        await client.post("/api/entities", json={"name": f"E{i}", "type": "person"})
 
     resp = await client.get("/api/entities?page=2&page_size=3")
     assert resp.status_code == 200
@@ -38,7 +38,7 @@ async def test_entities_pagination_second_page(client: AsyncClient):
 
 async def test_entities_pagination_out_of_range_page(client: AsyncClient):
     """Requesting a page beyond the total returns an empty items list."""
-    await client.post("/api/entities", json={"name": "Solo", "type": "other"})
+    await client.post("/api/entities", json={"name": "Solo", "type": "person"})
 
     resp = await client.get("/api/entities?page=99&page_size=10")
     assert resp.status_code == 200

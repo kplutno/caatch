@@ -136,7 +136,7 @@ async def test_update_entity_partial_fields(client: AsyncClient):
 async def test_delete_entity_no_connections(client: AsyncClient):
     """Deleting an entity with no connections should succeed cleanly."""
     e = (
-        await client.post("/api/entities", json={"name": "Lonely", "type": "other"})
+        await client.post("/api/entities", json={"name": "Lonely", "type": "person"})
     ).json()
 
     del_resp = await client.delete(f"/api/entities/{e['id']}")
@@ -199,7 +199,7 @@ async def test_get_entities_type_filter(client: AsyncClient):
 
 async def test_create_and_read_all_entity_types(client: AsyncClient):
     """Ensure every EntityType can be created and retrieved individually."""
-    entity_types = ["person", "organization", "place", "event", "other"]
+    entity_types = ["person", "organization", "place", "event"]
     created_ids = []
     for et in entity_types:
         resp = await client.post(
@@ -220,7 +220,7 @@ async def test_create_and_read_all_entity_types(client: AsyncClient):
 
 async def test_filter_entities_by_each_type(client: AsyncClient):
     """?type= filter should work for every EntityType."""
-    entity_types = ["person", "organization", "place", "event", "other"]
+    entity_types = ["person", "organization", "place", "event"]
     for et in entity_types:
         await client.post("/api/entities", json={"name": f"Filter {et}", "type": et})
 
@@ -236,7 +236,7 @@ async def test_read_all_entities_unfiltered(client: AsyncClient):
     """GET /api/entities with no filter returns all entities."""
     names = ["Alpha", "Beta", "Gamma"]
     for name in names:
-        await client.post("/api/entities", json={"name": name, "type": "other"})
+        await client.post("/api/entities", json={"name": name, "type": "person"})
 
     resp = await client.get("/api/entities")
     assert resp.status_code == 200

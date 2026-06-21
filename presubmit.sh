@@ -121,6 +121,31 @@ if $RUN_FRONTEND; then
 fi
 
 # ── Integration tests (opt-in) ────────────────────────────────────────────────
+dump_k8s_debug_info() {
+  echo -e "\n${RED}${BOLD}━━━ Kubernetes Debug Info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+  echo -e "${YELLOW}=== Pods Status ===${RESET}"
+  kubectl get pods -o wide || true
+
+  echo -e "\n${YELLOW}=== Services ===${RESET}"
+  kubectl get svc || true
+
+  echo -e "\n${YELLOW}=== Recent Events ===${RESET}"
+  kubectl get events --sort-by='.metadata.creationTimestamp' | tail -n 20 || true
+
+  echo -e "\n${YELLOW}=== Backend Logs ===${RESET}"
+  kubectl logs deployment/caatch-backend --tail=100 || true
+
+  echo -e "\n${YELLOW}=== Backend Init Container Logs ===${RESET}"
+  kubectl logs deployment/caatch-backend -c wait-for-db --tail=100 || true
+
+  echo -e "\n${YELLOW}=== Postgres Logs ===${RESET}"
+  kubectl logs statefulset/caatch-postgres --tail=100 || true
+
+  echo -e "\n${YELLOW}=== Pod Descriptions ===${RESET}"
+  kubectl describe pods || true
+  echo -e "${RED}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}\n"
+}
+
 if $RUN_INTEGRATION; then
   echo -e "\n${BOLD}━━━ Integration Tests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
   echo -e "${YELLOW}  ⚠  Requires a running Kind cluster named 'desktop' and Helm.${RESET}"
@@ -132,6 +157,7 @@ if $RUN_INTEGRATION; then
     ok "deploy.sh dev"
   else
     fail "deploy.sh dev"
+    dump_k8s_debug_info
   fi
 
   step "Waiting for deployments to become available"
@@ -141,6 +167,7 @@ if $RUN_INTEGRATION; then
     ok "kubectl wait (deployments ready)"
   else
     fail "kubectl wait (deployments timed out)"
+    dump_k8s_debug_info
   fi
 
   step "Starting port-forwarding"
@@ -162,6 +189,7 @@ if $RUN_INTEGRATION; then
     ok "backend health check"
   else
     fail "backend health check (timed out after 60s)"
+    dump_k8s_debug_info
   fi
 
   step "Running integration tests (pytest tests/integration/)"

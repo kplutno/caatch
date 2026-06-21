@@ -21,36 +21,36 @@ describe('RELATION_NAMES', () => {
 describe('getTypeColor', () => {
   it('returns teal colours for person', () => {
     const result = getTypeColor('person');
-    expect(result.fill).toBe('#0d9488');
+    expect(result.fill).toBe('#99f6e4');
     expect(result.bg).toContain('teal');
   });
 
   it('returns rose colours for event', () => {
     const result = getTypeColor('event');
-    expect(result.fill).toBe('#e11d48');
+    expect(result.fill).toBe('#fecdd3');
     expect(result.bg).toContain('rose');
   });
 
   it('returns sky colours for place', () => {
     const result = getTypeColor('place');
-    expect(result.fill).toBe('#0284c7');
+    expect(result.fill).toBe('#bae6fd');
     expect(result.bg).toContain('sky');
   });
 
   it('returns amber colours for organization', () => {
     const result = getTypeColor('organization');
-    expect(result.fill).toBe('#d97706');
+    expect(result.fill).toBe('#fde68a');
     expect(result.bg).toContain('amber');
   });
 
   it('returns purple colours for unknown types', () => {
     const result = getTypeColor('unknown');
-    expect(result.fill).toBe('#9333ea');
+    expect(result.fill).toBe('#e9d5ff');
     expect(result.bg).toContain('purple');
   });
 
   it('always returns an object with bg, fill, and glow keys', () => {
-    for (const type of ['person', 'event', 'place', 'organization', 'other']) {
+    for (const type of ['person', 'event', 'place', 'organization']) {
       const result = getTypeColor(type);
       expect(result).toHaveProperty('bg');
       expect(result).toHaveProperty('fill');

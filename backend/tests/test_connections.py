@@ -171,15 +171,17 @@ async def test_connection_invalid_labels(client: AsyncClient):
 
 async def test_connection_invalid_label_for_source_type(client: AsyncClient):
     """A label not defined for the source type should return 400."""
-    o = (await client.post("/api/entities", json={"name": "X", "type": "other"})).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "X", "type": "place"})
+    ).json()
     p = (
         await client.post("/api/entities", json={"name": "Y", "type": "person"})
     ).json()
 
-    # 'other' type only supports OTHER label — KNOWS should be rejected
+    # 'place' type does not support KNOWS label — KNOWS should be rejected
     resp = await client.post(
         "/api/connections",
-        json={"source_id": o["id"], "target_id": p["id"], "label": "KNOWS"},
+        json={"source_id": pl["id"], "target_id": p["id"], "label": "KNOWS"},
     )
     assert resp.status_code == 400
     assert "not allowed" in resp.json()["detail"]
@@ -285,16 +287,16 @@ async def test_connection_event_located_in_place(client: AsyncClient):
 
 
 async def test_connection_other_entity_other_label(client: AsyncClient):
-    """entity of type 'other' can use label OTHER."""
-    o1 = (
-        await client.post("/api/entities", json={"name": "X", "type": "other"})
+    """entity of type 'person' can use label OTHER."""
+    p1 = (
+        await client.post("/api/entities", json={"name": "X", "type": "person"})
     ).json()
-    o2 = (
-        await client.post("/api/entities", json={"name": "Y", "type": "other"})
+    p2 = (
+        await client.post("/api/entities", json={"name": "Y", "type": "person"})
     ).json()
 
     resp = await client.post(
         "/api/connections",
-        json={"source_id": o1["id"], "target_id": o2["id"], "label": "OTHER"},
+        json={"source_id": p1["id"], "target_id": p2["id"], "label": "OTHER"},
     )
     assert resp.status_code == 200

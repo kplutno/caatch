@@ -18,11 +18,11 @@ describe('AddEntityForm', () => {
     expect(screen.getByRole('combobox')).toHaveValue('person');
   });
 
-  it('renders all 5 entity type options', () => {
+  it('renders all 4 entity type options', () => {
     render(<AddEntityForm onCreateEntity={vi.fn()} />);
     const select = screen.getByRole('combobox');
     const options = Array.from(select.options).map((o) => o.value);
-    expect(options).toEqual(['person', 'event', 'place', 'organization', 'other']);
+    expect(options).toEqual(['person', 'event', 'place', 'organization']);
   });
 
   it('does not call onCreateEntity when name is empty and form is submitted', async () => {

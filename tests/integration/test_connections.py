@@ -102,10 +102,10 @@ class TestConnectionCRUD:
         conn = _create_connection(city["id"], country["id"], "LOCATED_IN")
         assert conn["label"] == "LOCATED_IN"
 
-    def test_create_connection_other_entity(self):
-        o1 = _create_entity("other", "OtherA")
-        o2 = _create_entity("other", "OtherB")
-        conn = _create_connection(o1["id"], o2["id"], "OTHER")
+    def test_create_connection_other_label(self):
+        p1 = _create_entity("person", "PersonA")
+        p2 = _create_entity("person", "PersonB")
+        conn = _create_connection(p1["id"], p2["id"], "OTHER")
         assert conn["label"] == "OTHER"
 
     def test_create_connection_with_description(self):
@@ -140,12 +140,12 @@ class TestConnectionCRUD:
         assert resp.status_code == 400
 
     def test_create_connection_invalid_label_for_source(self):
-        """label KNOWS is not allowed from an 'other' entity."""
-        o = _create_entity("other", "OtherSrc")
+        """label KNOWS is not allowed from a 'place' entity."""
+        pl = _create_entity("place", "PlaceSrc")
         p = _create_entity("person", "PersonTarget")
         resp = requests.post(
             f"{BASE}/api/connections",
-            json={"source_id": o["id"], "target_id": p["id"], "label": "KNOWS"},
+            json={"source_id": pl["id"], "target_id": p["id"], "label": "KNOWS"},
             timeout=10,
         )
         assert resp.status_code == 400
@@ -210,7 +210,7 @@ class TestConnectionRules:
     def test_rules_contains_all_entity_types(self):
         resp = requests.get(f"{BASE}/api/connections/rules", timeout=10)
         rules = resp.json()
-        for et in ["person", "organization", "place", "event", "other"]:
+        for et in ["person", "organization", "place", "event"]:
             assert et in rules, f"Missing entity type '{et}' in rules"
 
     def test_rules_person_has_expected_labels(self):

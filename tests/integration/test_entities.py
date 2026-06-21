@@ -60,9 +60,6 @@ class TestEntityCRUD:
         data = _create_entity("event", "Tech Summit 2025")
         assert data["type"] == "event"
 
-    def test_create_other(self):
-        data = _create_entity("other", "Unknown Thing")
-        assert data["type"] == "other"
 
     def test_create_entity_with_nested_properties(self):
         props = {
@@ -77,7 +74,7 @@ class TestEntityCRUD:
 
     def test_create_entity_minimal_fields(self):
         """name and type are the only required fields."""
-        data = _create_entity("other", "Minimal")
+        data = _create_entity("person", "Minimal")
         assert data["description"] is None
         assert data["properties"] == {}
 
@@ -116,7 +113,7 @@ class TestEntityCRUD:
         unique_name = f"UniqueOrg-{uuid.uuid4()}"
         created = _create_entity("organization", unique_name)
         resp = requests.get(
-            f"{BASE}/api/entities", params={"type": "organization"}, timeout=10
+            f"{BASE}/api/entities", params={"type": "organization", "page_size": 200}, timeout=10
         )
         assert resp.status_code == 200
         ids = [e["id"] for e in resp.json()["items"]]
@@ -149,7 +146,7 @@ class TestEntityCRUD:
         assert resp.status_code == 404
 
     def test_delete_entity(self):
-        created = _create_entity("other", "Delete Me")
+        created = _create_entity("person", "Delete Me")
         del_resp = requests.delete(f"{BASE}/api/entities/{created['id']}", timeout=10)
         assert del_resp.status_code == 200
         assert "deleted" in del_resp.json()["message"].lower()

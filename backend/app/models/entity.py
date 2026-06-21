@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional, Dict, Any
-from sqlmodel import Field, SQLModel, Column, AutoString
-from sqlalchemy import JSON, UUID
+from sqlmodel import Field, SQLModel, Column
+from sqlalchemy import JSON, UUID, Enum as sa_Enum
 from enum import Enum
 
 
@@ -10,14 +10,19 @@ class EntityType(str, Enum):
     event = "event"
     place = "place"
     organization = "organization"
-    other = "other"
 
 
 class EntityBase(SQLModel):
     model_config = {"use_enum_values": True}
 
     name: str = Field(index=True)
-    type: EntityType = Field(sa_type=AutoString, index=True)
+    type: EntityType = Field(
+        sa_column=Column(
+            sa_Enum(EntityType, name="entitytype"),
+            nullable=False,
+            index=True,
+        )
+    )
     description: Optional[str] = None
     properties: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
 

@@ -51,6 +51,12 @@ const eslintConfig = [
       '@next/next/no-html-link-for-pages': 'error',
     },
   },
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'no-unused-vars': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;

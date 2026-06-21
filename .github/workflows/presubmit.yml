@@ -136,3 +136,21 @@ jobs:
 
       - name: Run Integration Tests
         run: pytest tests/integration/ -v
+
+      - name: Dump Kubernetes debug info on failure
+        if: failure()
+        run: |
+          echo "=== Pods Status ==="
+          kubectl get pods -o wide || true
+          echo "=== Services ==="
+          kubectl get svc || true
+          echo "=== Recent Events ==="
+          kubectl get events --sort-by='.metadata.creationTimestamp' | tail -n 50 || true
+          echo "=== Backend Logs ==="
+          kubectl logs deployment/caatch-backend --tail=100 || true
+          echo "=== Backend Init Container Logs ==="
+          kubectl logs deployment/caatch-backend -c wait-for-db --tail=100 || true
+          echo "=== Postgres Logs ==="
+          kubectl logs statefulset/caatch-postgres --tail=100 || true
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods || true
