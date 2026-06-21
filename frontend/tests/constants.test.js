@@ -10,11 +10,10 @@ describe('RELATION_NAMES', () => {
     expect(RELATION_NAMES.ATTENDED).toBe('Attended');
     expect(RELATION_NAMES.PARTICIPATED_IN).toBe('Participated In');
     expect(RELATION_NAMES.WORKS_WITH).toBe('Works With');
-    expect(RELATION_NAMES.OTHER).toBe('Other');
   });
 
-  it('contains exactly 8 relation types', () => {
-    expect(Object.keys(RELATION_NAMES)).toHaveLength(8);
+  it('contains exactly 7 relation types', () => {
+    expect(Object.keys(RELATION_NAMES)).toHaveLength(7);
   });
 });
 

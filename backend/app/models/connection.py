@@ -14,7 +14,6 @@ class ConnectionLabel(str, Enum):
     ATTENDED = "ATTENDED"
     PARTICIPATED_IN = "PARTICIPATED_IN"
     WORKS_WITH = "WORKS_WITH"
-    OTHER = "OTHER"
 
 
 # Validation rules: source_type -> { label -> list of target_types }
@@ -27,39 +26,15 @@ ALLOWED_CONNECTIONS = {
         ConnectionLabel.MEMBER_OF: [EntityType.organization],
         ConnectionLabel.ATTENDED: [EntityType.event],
         ConnectionLabel.PARTICIPATED_IN: [EntityType.event],
-        ConnectionLabel.OTHER: [
-            EntityType.person,
-            EntityType.event,
-            EntityType.place,
-            EntityType.organization,
-        ],
     },
     EntityType.organization: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [
-            EntityType.person,
-            EntityType.event,
-            EntityType.place,
-            EntityType.organization,
-        ],
     },
     EntityType.event: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [
-            EntityType.person,
-            EntityType.event,
-            EntityType.place,
-            EntityType.organization,
-        ],
     },
     EntityType.place: {
         ConnectionLabel.LOCATED_IN: [EntityType.place],
-        ConnectionLabel.OTHER: [
-            EntityType.person,
-            EntityType.event,
-            EntityType.place,
-            EntityType.organization,
-        ],
     },
 }
 

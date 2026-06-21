@@ -284,19 +284,3 @@ async def test_connection_event_located_in_place(client: AsyncClient):
         json={"source_id": ev["id"], "target_id": place["id"], "label": "LOCATED_IN"},
     )
     assert resp.status_code == 200
-
-
-async def test_connection_other_entity_other_label(client: AsyncClient):
-    """entity of type 'person' can use label OTHER."""
-    p1 = (
-        await client.post("/api/entities", json={"name": "X", "type": "person"})
-    ).json()
-    p2 = (
-        await client.post("/api/entities", json={"name": "Y", "type": "person"})
-    ).json()
-
-    resp = await client.post(
-        "/api/connections",
-        json={"source_id": p1["id"], "target_id": p2["id"], "label": "OTHER"},
-    )
-    assert resp.status_code == 200

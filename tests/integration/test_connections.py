@@ -102,11 +102,7 @@ class TestConnectionCRUD:
         conn = _create_connection(city["id"], country["id"], "LOCATED_IN")
         assert conn["label"] == "LOCATED_IN"
 
-    def test_create_connection_other_label(self):
-        p1 = _create_entity("person", "PersonA")
-        p2 = _create_entity("person", "PersonB")
-        conn = _create_connection(p1["id"], p2["id"], "OTHER")
-        assert conn["label"] == "OTHER"
+
 
     def test_create_connection_with_description(self):
         person = _create_entity("person", "Desc Person")

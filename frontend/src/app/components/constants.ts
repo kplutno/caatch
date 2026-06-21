@@ -8,8 +8,7 @@ export const RELATION_NAMES: Record<string, string> = {
   LIVES_IN: 'Lives In',
   ATTENDED: 'Attended',
   PARTICIPATED_IN: 'Participated In',
-  WORKS_WITH: 'Works With',
-  OTHER: 'Other'
+  WORKS_WITH: 'Works With'
 };
 
 export interface TypeColor {

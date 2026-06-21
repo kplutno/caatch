@@ -39,7 +39,7 @@ export default function NetworkExplorer({
     }
 
     const newPositions: Record<string, { x: number; y: number }> = {};
-    const width = 500;
+    const width = 1000;
     
     // Count neighbors (connections/children) for each node inside focusNetwork
     const getConnectionCount = (nodeId: string) => {
@@ -75,10 +75,10 @@ export default function NetworkExplorer({
       if (rowNodes.length === 1) {
         newPositions[rowNodes[0].id] = { x: width / 2, y: yCoordinate };
       } else {
-        const step = (width - 100) / (rowNodes.length - 1);
+        const step = (width - 160) / (rowNodes.length - 1);
         rowNodes.forEach((node, idx) => {
           newPositions[node.id] = {
-            x: 50 + idx * step,
+            x: 80 + idx * step,
             // Add a small upward vertical shift (up to -20px) based on node rank/degree
             y: yCoordinate - Math.min(20, node.degree * 4)
           };
@@ -123,11 +123,11 @@ export default function NetworkExplorer({
 
     if (clientX === undefined || clientY === undefined) return;
 
-    const svgX = ((clientX - rect.left) / rect.width) * 500;
+    const svgX = ((clientX - rect.left) / rect.width) * 1000;
     const svgY = ((clientY - rect.top) / rect.height) * 500;
 
-    // Keep nodes inside bounds [20, 480] to prevent disappearing off-screen
-    const boundedX = Math.max(20, Math.min(480, svgX));
+    // Keep nodes inside bounds [20, 980] and [20, 480] to prevent disappearing off-screen
+    const boundedX = Math.max(20, Math.min(980, svgX));
     const boundedY = Math.max(20, Math.min(480, svgY));
 
     setPositions(prev => ({
@@ -161,7 +161,7 @@ export default function NetworkExplorer({
     if (!focusEntityId || focusNetwork.nodes.length === 0) return { nodes: [], edges: [] };
 
     const nodes: (NetworkNode & { x: number; y: number; isCenter: boolean })[] = focusNetwork.nodes.map(node => {
-      const pos = positions[node.id] || { x: 250, y: 250 };
+      const pos = positions[node.id] || { x: 500, y: 250 };
       return {
         ...node,
         x: pos.x,
@@ -225,10 +225,10 @@ export default function NetworkExplorer({
       {/* Ego Graph Display */}
       <div className="flex-1 min-h-[500px] bg-slate-50/50 border border-slate-200 rounded-2xl relative flex items-center justify-center p-4 overflow-hidden shadow-inner">
         {focusEntityId && visualNetwork.nodes.length > 0 ? (
-          <div className="relative w-full max-w-[500px] h-[500px] select-none bg-white rounded-xl border border-slate-100 p-2 shadow-xs">
+          <div className="relative w-full h-[500px] select-none bg-white rounded-xl border border-slate-100 p-2 shadow-xs">
             <svg
               ref={svgRef}
-              viewBox="0 0 500 500"
+              viewBox="0 0 1000 500"
               className="w-full h-full"
             >
               {/* Connection Lines (Simple Straight Lines) */}
