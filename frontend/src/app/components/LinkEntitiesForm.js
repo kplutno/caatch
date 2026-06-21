@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { RELATION_NAMES } from './constants';
 
 export default function LinkEntitiesForm({ entities, connectionRules, onCreateConnection }) {
@@ -15,9 +15,10 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
   const sourceEntity = entities.find(e => e.id === newConnection.source_id);
 
   // Determine allowed labels based on source entity type
-  const allowedLabels = sourceEntity && connectionRules
-    ? Object.keys(connectionRules[sourceEntity.type] || {})
-    : [];
+  const allowedLabels = useMemo(
+    () => (sourceEntity && connectionRules ? Object.keys(connectionRules[sourceEntity.type] || {}) : []),
+    [sourceEntity, connectionRules]
+  );
 
   // Reset target and label if source changes and current values are no longer valid
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function LinkEntitiesForm({ entities, connectionRules, onCreateCo
         target_id: ''
       };
     });
-  }, [newConnection.source_id, connectionRules]);
+  }, [newConnection.source_id, connectionRules, allowedLabels]);
 
   // Determine allowed target types based on selected label
   const allowedTargetTypes = sourceEntity && newConnection.label && connectionRules

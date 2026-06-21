@@ -24,7 +24,7 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Loading and Error states
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [backendBuildTag, setBackendBuildTag] = useState('fetching...');
   const [connectionRules, setConnectionRules] = useState({});
@@ -32,6 +32,7 @@ export default function Home() {
   // Fetch all entities and connections on mount
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch ego network whenever focusEntityId or depth changes

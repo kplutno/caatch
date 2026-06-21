@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
-import { RELATION_NAMES, getTypeColor } from './constants';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { RELATION_NAMES } from './constants';
 
 export default function NetworkExplorer({
   entities,
@@ -17,11 +17,6 @@ export default function NetworkExplorer({
   const [positions, setPositions] = useState({});
   // Keep track of which node is currently being dragged
   const [draggedNodeId, setDraggedNodeId] = useState(null);
-
-  // Find targeted entity info helper
-  const focusEntity = useMemo(() => {
-    return entities.find(e => e.id === focusEntityId) || null;
-  }, [entities, focusEntityId]);
 
   // Recalculate initial layout only when the focus entity or network nodes change
   useEffect(() => {
@@ -96,11 +91,11 @@ export default function NetworkExplorer({
     setDraggedNodeId(nodeId);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!draggedNodeId || !svgRef.current) return;
 
     const rect = svgRef.current.getBoundingClientRect();
-    
+
     // Convert client coordinates to SVG viewbox coordinates (500x500 scaling)
     const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
     const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
@@ -118,11 +113,11 @@ export default function NetworkExplorer({
       ...prev,
       [draggedNodeId]: { x: boundedX, y: boundedY }
     }));
-  };
+  }, [draggedNodeId]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setDraggedNodeId(null);
-  };
+  }, []);
 
   // Add global mouse listeners to make dragging smooth outside of the node bounds
   useEffect(() => {
@@ -138,7 +133,7 @@ export default function NetworkExplorer({
       window.removeEventListener('touchmove', handleMouseMove);
       window.removeEventListener('touchend', handleMouseUp);
     };
-  }, [draggedNodeId]);
+  }, [draggedNodeId, handleMouseMove, handleMouseUp]);
 
   // Form coordinates for nodes and links
   const visualNetwork = useMemo(() => {
@@ -240,7 +235,6 @@ export default function NetworkExplorer({
 
               {/* Nodes */}
               {visualNetwork.nodes.map((node, idx) => {
-                const style = getTypeColor(node.type);
                 return (
                   <g
                     key={idx}

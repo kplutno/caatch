@@ -12,8 +12,7 @@ import {
   PlusIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { getTypeColor } from './constants';
-import { API_URL } from './constants';
+import { getTypeColor, API_URL } from './constants';
 import AddEntityForm from './AddEntityForm';
 
 const PAGE_SIZE = 12;

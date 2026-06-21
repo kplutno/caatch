@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { RELATION_NAMES } from './constants';
-import { API_URL } from './constants';
+import { RELATION_NAMES, API_URL } from './constants';
 import LinkEntitiesForm from './LinkEntitiesForm';
 
 const PAGE_SIZE = 15;
