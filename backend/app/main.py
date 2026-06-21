@@ -7,7 +7,7 @@ from app.api import system, user, entity, connection, graph
 app = FastAPI(
     title="Caatch API",
     description="Contact and network relationship management API",
-    version="1.0.0",
+    version=os.getenv("IMAGE_TAG", "local-dev"),
 )
 
 # --- CORS ---

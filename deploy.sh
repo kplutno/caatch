@@ -1,7 +1,30 @@
 #!/bin/bash
 set -e
 
-ENV=${1:-dev}
+CLEAN=false
+ENV=""
+TAG=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --clean)
+      CLEAN=true
+      ;;
+    *)
+      if [ -z "$ENV" ]; then
+        ENV="$arg"
+      elif [ -z "$TAG" ]; then
+        TAG="$arg"
+      else
+        echo "Error: Unexpected argument '$arg'"
+        echo "Usage: $0 [--clean] [environment] [image_tag]"
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+ENV=${ENV:-dev}
 VALUES_FILE="k8s/values-$ENV.yaml"
 
 if [ ! -f "$VALUES_FILE" ]; then
@@ -9,8 +32,44 @@ if [ ! -f "$VALUES_FILE" ]; then
   exit 1
 fi
 
-# Set tag from second argument, or default to a unique human-readable timestamp tag
-TAG=${2:-$(date +%Y%m%d-%H%M%S)}
+TAG=${TAG:-$(date +%Y%m%d-%H%M%S)}
+
+if [ "$CLEAN" = true ]; then
+  echo "Cleaning up existing deployment for environment: $ENV..."
+
+  # Terminate port-forwarding
+  echo "Stopping any running port-forward processes..."
+  pgrep -f "port-forward svc/caatch-frontend" | xargs kill -9 2>/dev/null || true
+  pgrep -f "port-forward svc/caatch-backend" | xargs kill -9 2>/dev/null || true
+
+  # Remove finalizers to prevent getting stuck in Terminating state (common in local Kind clusters)
+  if command -v kubectl >/dev/null 2>&1; then
+    echo "Patching services and PVCs to clear finalizers..."
+    kubectl patch svc caatch-backend -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+    kubectl patch svc caatch-frontend -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+    kubectl patch pvc caatch-postgres-pvc -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+  fi
+
+  # Uninstall helm chart
+  if helm list -q | grep -q "^caatch$"; then
+    echo "Uninstalling Helm release caatch..."
+    helm uninstall caatch --wait
+  else
+    echo "No existing Helm release 'caatch' found."
+  fi
+
+  # Delete PVC
+  if command -v kubectl >/dev/null 2>&1; then
+    echo "Ensuring persistent volume claims are deleted..."
+    kubectl delete pvc -l app.kubernetes.io/instance=caatch --ignore-not-found=true --wait=false
+
+    echo "Waiting for pods to be fully terminated..."
+    kubectl wait --for=delete pod -l app.kubernetes.io/instance=caatch --timeout=10s 2>/dev/null || true
+  fi
+
+  echo "Cleanup complete. Starting deployment from scratch..."
+fi
+
 echo "Using image tag: $TAG"
 
 # Build backend

@@ -24,10 +24,14 @@ def upgrade() -> None:
     # Check if database is postgres and create enum type
     bind = op.get_bind()
     if bind.dialect.name == "postgresql":
-        # Create EntityType enum type in PostgreSQL
-        sa.Enum(
-            "person", "event", "place", "organization", "other", name="entitytype"
-        ).create(bind, checkfirst=True)
+        # Check if type exists first using pg_type to prevent DuplicateObjectError
+        has_type = bind.execute(
+            sa.text("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'entitytype')")
+        ).scalar()
+        if not has_type:
+            op.execute(
+                "CREATE TYPE entitytype AS ENUM ('person', 'event', 'place', 'organization', 'other')"
+            )
 
     op.create_table(
         "entity",
@@ -35,7 +39,7 @@ def upgrade() -> None:
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),  # type: ignore[attr-defined]
         sa.Column(
             "type",
-            sa.Enum(
+            postgresql.ENUM(
                 "person",
                 "event",
                 "place",
@@ -43,6 +47,7 @@ def upgrade() -> None:
                 "other",
                 name="entitytype",
                 inherit_schema=True,
+                create_type=False,
             ),
             nullable=False,
         ),
