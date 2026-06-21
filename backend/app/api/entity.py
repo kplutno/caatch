@@ -23,6 +23,7 @@ async def create_entity(
 @router.get("", response_model=PaginatedResponse[EntityRead])
 async def read_entities(
     type: Optional[str] = None,
+    search: Optional[str] = None,
     page: int = Query(default=1, ge=1, description="1-based page number"),
     page_size: int = Query(default=20, ge=1, le=200, description="Items per page"),
     session: AsyncSession = Depends(get_session),
@@ -33,6 +34,10 @@ async def read_entities(
     if type:
         statement = statement.where(Entity.type == type)
         count_statement = count_statement.where(Entity.type == type)
+
+    if search:
+        statement = statement.where(Entity.name.ilike(f"%{search}%"))
+        count_statement = count_statement.where(Entity.name.ilike(f"%{search}%"))
 
     total = (await session.exec(count_statement)).one()
     total_pages = max(1, math.ceil(total / page_size))

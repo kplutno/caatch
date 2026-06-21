@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  RectangleStackIcon,
+  LinkIcon,
+  GlobeAltIcon,
+} from '@heroicons/react/24/outline';
 import { API_URL } from './components/constants';
-import AddEntityForm from './components/AddEntityForm';
-import LinkEntitiesForm from './components/LinkEntitiesForm';
 import NetworkExplorer from './components/NetworkExplorer';
 import EntitiesList from './components/EntitiesList';
 import ConnectionsLedger from './components/ConnectionsLedger';
 
 export default function Home() {
-  // Navigation tabs: 'graph' | 'entities' | 'connections'
-  const [activeTab, setActiveTab] = useState('graph');
+  // Navigation tabs: 'entities' | 'connections' | 'graph'
+  const [activeTab, setActiveTab] = useState('entities');
 
   // Core data states
   const [entities, setEntities] = useState([]);
@@ -104,7 +107,6 @@ export default function Home() {
       // Refresh list and focus the new entity
       await fetchData();
       setFocusEntityId(created.id);
-      setActiveTab('graph');
       return true;
     } catch (err) {
       alert('Error creating entity: ' + err.message);
@@ -169,6 +171,12 @@ export default function Home() {
     }
   };
 
+  const TABS = [
+    { id: 'entities', label: 'Entities', Icon: RectangleStackIcon },
+    { id: 'connections', label: 'Connections', Icon: LinkIcon },
+    { id: 'graph', label: 'Network Explorer', Icon: GlobeAltIcon },
+  ];
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-500/20">
       {/* Header */}
@@ -180,7 +188,7 @@ export default function Home() {
                 Caatch Graph
               </h1>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-500 font-medium">
-                <span>Political Event & Relation Monitor</span>
+                <span>Political Event &amp; Relation Monitor</span>
                 <span className="hidden sm:inline text-slate-300">|</span>
                 <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-[9px] px-1.5 py-0.2 rounded text-slate-600 font-mono">
                   Frontend: {process.env.NEXT_PUBLIC_IMAGE_TAG || 'local-dev'}
@@ -194,20 +202,18 @@ export default function Home() {
 
           {/* Navigation Tabs */}
           <nav className="flex bg-slate-100 p-0.5 rounded border border-slate-200">
-            {[
-              { id: 'graph', label: 'Network Explorer' },
-              { id: 'entities', label: 'Entities' },
-              { id: 'connections', label: 'Connections' }
-            ].map(tab => (
+            {TABS.map(({ id, label, Icon }) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 text-[11px] font-semibold rounded transition-all duration-300 ${activeTab === tab.id
-                  ? 'bg-white text-teal-600 border border-slate-200'
-                  : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded transition-all duration-300 ${
+                  activeTab === id
+                    ? 'bg-white text-teal-600 border border-slate-200 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
               >
-                {tab.label}
+                <Icon className="w-3.5 h-3.5" />
+                {label}
               </button>
             ))}
           </nav>
@@ -215,61 +221,50 @@ export default function Home() {
       </header>
 
       {/* Main Workspace */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-2 md:p-2 grid grid-cols-1 lg:grid-cols-12 gap-2">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 space-y-2">
 
         {/* Error Notification */}
         {errorMessage && (
-          <div className="col-span-12 p-2 rounded border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-center justify-between shadow-sm">
+          <div className="p-2 rounded border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-center justify-between shadow-sm">
             <span>{errorMessage}</span>
             <button onClick={() => setErrorMessage('')} className="hover:text-rose-900 font-bold">&times;</button>
           </div>
         )}
 
-        {/* Left Control Panel / Inputs (4 cols) */}
-        <aside className="lg:col-span-4 space-y-2">
-          <AddEntityForm onCreateEntity={handleCreateEntity} />
-          <LinkEntitiesForm
+        {/* TAB 1: Entities (default) */}
+        {activeTab === 'entities' && (
+          <EntitiesList
+            setFocusEntityId={setFocusEntityId}
+            setActiveTab={setActiveTab}
+            onDeleteEntity={handleDeleteEntity}
+            onCreateEntity={handleCreateEntity}
+            refreshKey={refreshKey}
+          />
+        )}
+
+        {/* TAB 2: Connections */}
+        {activeTab === 'connections' && (
+          <ConnectionsLedger
             entities={entities}
             connectionRules={connectionRules}
+            onDeleteConnection={handleDeleteConnection}
             onCreateConnection={handleCreateConnection}
+            refreshKey={refreshKey}
           />
-        </aside>
+        )}
 
-        {/* Right Action Canvas (8 cols) */}
-        <section className="lg:col-span-8 flex flex-col">
+        {/* TAB 3: Network Explorer */}
+        {activeTab === 'graph' && (
+          <NetworkExplorer
+            entities={entities}
+            focusEntityId={focusEntityId}
+            setFocusEntityId={setFocusEntityId}
+            depth={depth}
+            setDepth={setDepth}
+            focusNetwork={focusNetwork}
+          />
+        )}
 
-          {/* TAB 1: Network Explorer */}
-          {activeTab === 'graph' && (
-            <NetworkExplorer
-              entities={entities}
-              focusEntityId={focusEntityId}
-              setFocusEntityId={setFocusEntityId}
-              depth={depth}
-              setDepth={setDepth}
-              focusNetwork={focusNetwork}
-            />
-          )}
-
-          {/* TAB 2: Entities list */}
-          {activeTab === 'entities' && (
-            <EntitiesList
-              setFocusEntityId={setFocusEntityId}
-              setActiveTab={setActiveTab}
-              onDeleteEntity={handleDeleteEntity}
-              refreshKey={refreshKey}
-            />
-          )}
-
-          {/* TAB 3: Connections Ledger */}
-          {activeTab === 'connections' && (
-            <ConnectionsLedger
-              entities={entities}
-              onDeleteConnection={handleDeleteConnection}
-              refreshKey={refreshKey}
-            />
-          )}
-
-        </section>
       </div>
     </main>
   );

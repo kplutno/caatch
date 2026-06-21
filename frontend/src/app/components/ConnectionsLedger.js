@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { RELATION_NAMES } from './constants';
 import { API_URL } from './constants';
+import LinkEntitiesForm from './LinkEntitiesForm';
 
 const PAGE_SIZE = 15;
 
@@ -65,12 +67,15 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
 
 export default function ConnectionsLedger({
   entities,
+  connectionRules,
   onDeleteConnection,
+  onCreateConnection,
   refreshKey,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState({ items: [], total: 0, total_pages: 1 });
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const fetchPage = useCallback(async (page) => {
     setIsLoading(true);
@@ -103,21 +108,63 @@ export default function ConnectionsLedger({
     setCurrentPage(Math.max(1, Math.min(page, data.total_pages)));
   };
 
+  const handleCreateConnection = async (connectionData) => {
+    const success = await onCreateConnection(connectionData);
+    if (success) {
+      setShowAddForm(false);
+      fetchPage(currentPage);
+    }
+    return success;
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-800">Established Relations</h2>
-        <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded">
-          {data.total} Total
-        </span>
+    <div className="space-y-4">
+      {/* Header row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-bold text-slate-800">Established Relations</h2>
+          <span className="text-xs bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded">
+            {data.total} Total
+          </span>
+        </div>
+        <button
+          onClick={() => setShowAddForm(v => !v)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-semibold text-xs rounded-md transition-all shadow-sm ${
+            showAddForm
+              ? 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+          }`}
+        >
+          {showAddForm
+            ? <><XMarkIcon className="w-3.5 h-3.5" /> Cancel</>
+            : <><PlusIcon className="w-3.5 h-3.5" /> Add Connection</>}
+        </button>
       </div>
 
+      {/* Inline Add Connection Form */}
+      {showAddForm && (
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
+          <LinkEntitiesForm
+            entities={entities}
+            connectionRules={connectionRules}
+            onCreateConnection={handleCreateConnection}
+          />
+        </div>
+      )}
+
+      {/* Connections Table */}
       <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-slate-400 text-sm animate-pulse">Loading…</div>
         ) : data.items.length === 0 ? (
           <div className="p-8 text-center text-slate-550 text-sm">
-            No connections established yet. Create connections using the side panel!
+            No connections established yet.{' '}
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="text-indigo-600 font-semibold hover:underline"
+            >
+              Add one now →
+            </button>
           </div>
         ) : (
           <>

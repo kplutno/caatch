@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function AddEntityForm({ onCreateEntity }) {
   const [newEntity, setNewEntity] = useState({
@@ -79,11 +80,11 @@ export default function AddEntityForm({ onCreateEntity }) {
             onChange={(e) => setNewEntity(prev => ({ ...prev, type: e.target.value }))}
             className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
           >
-            <option value="person">👤 Person</option>
-            <option value="event">📅 Event</option>
-            <option value="place">📍 Place</option>
-            <option value="organization">🏢 Organization</option>
-            <option value="other">🧬 Other</option>
+            <option value="person">Person</option>
+            <option value="event">Event</option>
+            <option value="place">Place</option>
+            <option value="organization">Organization</option>
+            <option value="other">Other</option>
           </select>
         </div>
 
@@ -119,9 +120,9 @@ export default function AddEntityForm({ onCreateEntity }) {
             <button
               type="button"
               onClick={addProperty}
-              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold transition-colors"
+              className="inline-flex items-center justify-center px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded transition-colors"
             >
-              +
+              <PlusIcon className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -130,7 +131,9 @@ export default function AddEntityForm({ onCreateEntity }) {
               {Object.entries(newEntity.properties).map(([k, v]) => (
                 <span key={k} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[9px] text-slate-600">
                   <strong>{k}:</strong> {v}
-                  <button type="button" onClick={() => removeProperty(k)} className="text-slate-400 hover:text-slate-650">&times;</button>
+                  <button type="button" onClick={() => removeProperty(k)} className="text-slate-400 hover:text-slate-600">
+                    <XMarkIcon className="w-2.5 h-2.5" />
+                  </button>
                 </span>
               ))}
             </div>
