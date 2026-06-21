@@ -21,9 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Check if database is postgres and create enum type
+    # Check if database is postgres/cockroach and create enum type
     bind = op.get_bind()
-    if bind.dialect.name == "postgresql":
+    if bind.dialect.name in ("postgresql", "cockroachdb"):
         # Check if type exists first using pg_type to prevent DuplicateObjectError
         has_type = bind.execute(
             sa.text(
@@ -101,5 +101,5 @@ def downgrade() -> None:
     op.drop_table("entity")
 
     bind = op.get_bind()
-    if bind.dialect.name == "postgresql":
+    if bind.dialect.name in ("postgresql", "cockroachdb"):
         sa.Enum(name="entitytype").drop(bind, checkfirst=True)

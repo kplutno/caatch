@@ -1,0 +1,78 @@
+{{- if .Values.cockroach.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "caatch.fullname" . }}-cockroach-pvc
+  labels:
+    {{- include "caatch.labels" . | nindent 4 }}
+    app: cockroach
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.cockroach.storage.size | quote }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "caatch.fullname" . }}-cockroach
+  labels:
+    {{- include "caatch.labels" . | nindent 4 }}
+    app: cockroach
+spec:
+  serviceName: {{ include "caatch.fullname" . }}-cockroach
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "caatch.selectorLabels" . | nindent 6 }}
+      app: cockroach
+  template:
+    metadata:
+      labels:
+        {{- include "caatch.selectorLabels" . | nindent 8 }}
+        app: cockroach
+    spec:
+      containers:
+      - name: cockroach
+        image: "{{ .Values.cockroach.image.repository }}:{{ .Values.cockroach.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 26257
+          name: grpc
+        - containerPort: 8080
+          name: http
+        command:
+        - /cockroach/cockroach
+        args:
+        - start-single-node
+        - --insecure
+        - --http-addr=0.0.0.0:8080
+        - --listen-addr=0.0.0.0:26257
+        volumeMounts:
+        - name: cockroach-data
+          mountPath: /cockroach/cockroach-data
+      volumes:
+      - name: cockroach-data
+        persistentVolumeClaim:
+          claimName: {{ include "caatch.fullname" . }}-cockroach-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "caatch.fullname" . }}-cockroach
+  labels:
+    {{- include "caatch.labels" . | nindent 4 }}
+    app: cockroach
+spec:
+  ports:
+  - port: 26257
+    name: grpc
+    targetPort: 26257
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    {{- include "caatch.selectorLabels" . | nindent 4 }}
+    app: cockroach
+{{- end }}

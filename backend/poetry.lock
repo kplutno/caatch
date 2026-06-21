@@ -1397,6 +1397,21 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "sqlalchemy-cockroachdb"
+version = "2.0.4"
+description = "CockroachDB dialect for SQLAlchemy"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "sqlalchemy_cockroachdb-2.0.4-py3-none-any.whl", hash = "sha256:0804306a733a1fe09b2d496eadf8bf35d878862b6138e69175136fa2ca0ce5d0"},
+    {file = "sqlalchemy_cockroachdb-2.0.4.tar.gz", hash = "sha256:f66354d2b93da89cb4524c5b78a44d0cf5a8943d328b7f0aee4aa1dfc6178b65"},
+]
+
+[package.dependencies]
+SQLAlchemy = ">=2.0.47,<2.1"
+
+[[package]]
 name = "sqlmodel"
 version = "0.0.38"
 description = "SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness."
@@ -1776,4 +1791,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "90df5250e3c0358498bdba0f351fe2d287e6a88b78686e3f9cfb615051e7c4f8"
+content-hash = "73ea599c9352b9696a4d6c7ebc7980b12bd60c27a194a242150d77fdf10b1372"

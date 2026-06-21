@@ -2,7 +2,7 @@
 
 **Caatch** is a full-stack political connection tracking application for mapping and monitoring relationships between political figures, events, locations, and organizations.
 
-It features an asynchronous **Python (FastAPI)** backend, an interactive **Next.js** frontend with a draggable SVG ego-network explorer, a **PostgreSQL** database, and is deployed onto a local Kubernetes (Kind) cluster via **Helm**.
+It features an asynchronous **Python (FastAPI)** backend, an interactive **Next.js** frontend with a draggable SVG ego-network explorer, a **CockroachDB** database, and is deployed onto a local Kubernetes (Kind) cluster via **Helm**.
 
 ---
 
@@ -52,7 +52,7 @@ chmod +x deploy.sh
 |---------|-----------|
 | Frontend UI | <http://localhost:3000> |
 | FastAPI Backend | <http://localhost:8000> |
-| PostgreSQL | `localhost:5432` |
+| CockroachDB | `localhost:26257` (requires port-forwarding) |
 
 ### 2. Verify the cluster
 
@@ -71,10 +71,10 @@ kubectl get svc
 cd backend
 poetry install
 
-# Run the dev server (requires a running Postgres)
+# Run the dev server (requires a running CockroachDB)
 poetry run uvicorn app.main:app --reload
 
-# Run tests (uses in-memory SQLite — no Postgres needed)
+# Run tests (uses in-memory SQLite — no CockroachDB needed)
 poetry run pytest tests/ -v
 ```
 
@@ -145,7 +145,7 @@ npm run build   # production build check
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/entities` | Create a new entity (person, place, event, organization, other) |
+| `POST` | `/api/entities` | Create a new entity (person, place, event, organization) |
 | `GET` | `/api/entities` | List entities — supports `?type=`, `?search=`, `?page=`, `?page_size=` |
 | `GET` | `/api/entities/{id}` | Get a single entity |
 | `PUT` | `/api/entities/{id}` | Update an entity |
@@ -171,7 +171,7 @@ npm run build   # production build check
 
 ## Technical Notes
 
-- **Database**: PostgreSQL with UUID primary keys and JSONB `properties` columns. Tests run against in-memory SQLite via `aiosqlite`.
+- **Database**: CockroachDB with UUID primary keys and JSONB `properties` columns. Tests run against in-memory SQLite via `aiosqlite`.
 - **Pagination**: All list endpoints return a generic `PaginatedResponse[T]` with `total`, `page`, `page_size`, and `total_pages`.
 - **Connection validation**: Allowed connection types are enforced server-side via `ALLOWED_CONNECTIONS` rules (source type → label → allowed target types).
 - **Network graph**: Ego-networks are computed with a recursive SQL CTE. The frontend renders them as a draggable SVG canvas with layered node layout.

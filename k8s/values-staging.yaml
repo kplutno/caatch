@@ -10,10 +10,10 @@ frontend:
   image:
     tag: staging-stable
 
-postgres:
+cockroach:
   enabled: false
-  host: postgres-staging.example.com
-  port: 5432
-  user: postgres_user
-  password: postgres_password
+  host: cockroach-staging.example.com
+  port: 26257
+  user: root
+  password: ""
   database: caatch_staging

@@ -20,17 +20,17 @@ frontend:
     type: LoadBalancer
     port: 3000
 
-postgres:
+cockroach:
   enabled: true
   host: ""
-  port: 5432
+  port: 26257
   image:
-    repository: postgres
-    tag: 18-alpine
+    repository: cockroachdb/cockroach
+    tag: v23.2.11
   storage:
     size: 1Gi
-  user: postgres
-  password: postgres
+  user: root
+  password: ""
   database: caatch
 
 ingress:

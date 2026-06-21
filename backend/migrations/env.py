@@ -25,9 +25,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = SQLModel.metadata
 
-db_url = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/caatch"
-)
+db_url = os.getenv("DATABASE_URL", "cockroachdb+asyncpg://root@localhost:26257/caatch")
 config.set_main_option("sqlalchemy.url", db_url)
 
 # other values from the config, defined by the needs of env.py,

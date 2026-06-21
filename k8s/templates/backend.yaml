@@ -45,7 +45,7 @@ spec:
                   exit(1)
         env:
         - name: DATABASE_URL
-          value: "postgresql+asyncpg://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ default (printf "%s-postgres" (include "caatch.fullname" .)) .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.database }}"
+          value: "cockroachdb+asyncpg://{{ .Values.cockroach.user }}{{ if .Values.cockroach.password }}:{{ .Values.cockroach.password }}{{ end }}@{{ default (printf "%s-cockroach" (include "caatch.fullname" .)) .Values.cockroach.host }}:{{ .Values.cockroach.port }}/{{ .Values.cockroach.database }}"
       containers:
       - name: backend
         image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
@@ -58,7 +58,7 @@ spec:
         - name: IMAGE_TAG
           value: {{ .Values.backend.image.tag | quote }}
         - name: DATABASE_URL
-          value: "postgresql+asyncpg://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ default (printf "%s-postgres" (include "caatch.fullname" .)) .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.database }}"
+          value: "cockroachdb+asyncpg://{{ .Values.cockroach.user }}{{ if .Values.cockroach.password }}:{{ .Values.cockroach.password }}{{ end }}@{{ default (printf "%s-cockroach" (include "caatch.fullname" .)) .Values.cockroach.host }}:{{ .Values.cockroach.port }}/{{ .Values.cockroach.database }}"
         livenessProbe:
           httpGet:
             path: /api/health

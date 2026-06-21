@@ -95,7 +95,7 @@ jobs:
 
       - name: Wait for deployments to become available
         run: |
-          kubectl wait pod -l app=postgres \
+          kubectl wait pod -l app=cockroach \
             --for=condition=ready \
             --timeout=120s
           kubectl wait deployment/caatch-backend \
@@ -150,7 +150,7 @@ jobs:
           kubectl logs deployment/caatch-backend --tail=100 || true
           echo "=== Backend Init Container Logs ==="
           kubectl logs deployment/caatch-backend -c wait-for-db --tail=100 || true
-          echo "=== Postgres Logs ==="
-          kubectl logs statefulset/caatch-postgres --tail=100 || true
+          echo "=== Cockroach Logs ==="
+          kubectl logs statefulset/caatch-cockroach --tail=100 || true
           echo "=== Pod Descriptions ==="
           kubectl describe pods || true

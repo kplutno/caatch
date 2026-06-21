@@ -29,7 +29,7 @@ async def get_entity_network(
         raise HTTPException(status_code=404, detail="Entity not found")
 
     # 1. Use recursive CTE to fetch IDs of all nodes connected within `depth` steps
-    # We cast to VARCHAR to support both PostgreSQL UUIDs and SQLite string representation.
+    # We cast to VARCHAR to support both CockroachDB UUIDs and SQLite string representation.
     query = text("""
         WITH RECURSIVE ConnectedNodes AS (
             -- Anchor: starting node (normalized to 32-char hex string)

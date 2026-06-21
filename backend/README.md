@@ -17,7 +17,7 @@ The chart is located at [k8/caatch-backend/](file:///home/kpluciennik/caatch/k8/
 ### Configuration Options
 
 You can modify values in [values.yaml](file:///home/kpluciennik/caatch/k8/caatch-backend/values.yaml):
-- `config.databaseUrl`: Connection string for PostgreSQL database.
+- `config.databaseUrl`: Connection string for CockroachDB database.
 - `config.allowedOrigins`: CORS allowed origins.
 - `image.repository`: Container image name.
 - `image.tag`: Image tag override.

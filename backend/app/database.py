@@ -6,7 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import AsyncGenerator
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/caatch"
+    "DATABASE_URL", "cockroachdb+asyncpg://root@localhost:26257/caatch"
 )
 
 engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=True, future=True)

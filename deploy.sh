@@ -47,7 +47,7 @@ if [ "$CLEAN" = true ]; then
     echo "Patching services and PVCs to clear finalizers..."
     kubectl patch svc caatch-backend -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
     kubectl patch svc caatch-frontend -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
-    kubectl patch pvc caatch-postgres-pvc -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+    kubectl patch pvc caatch-cockroach-pvc -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
   fi
 
   # Uninstall helm chart

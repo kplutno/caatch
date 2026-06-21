@@ -10,10 +10,10 @@ frontend:
   image:
     tag: prod-stable
 
-postgres:
+cockroach:
   enabled: false
-  host: postgres-prod.example.com
-  port: 5432
-  user: postgres_user
-  password: postgres_password
+  host: cockroach-prod.example.com
+  port: 26257
+  user: root
+  password: ""
   database: caatch_prod

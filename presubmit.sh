@@ -138,8 +138,8 @@ dump_k8s_debug_info() {
   echo -e "\n${YELLOW}=== Backend Init Container Logs ===${RESET}"
   kubectl logs deployment/caatch-backend -c wait-for-db --tail=100 || true
 
-  echo -e "\n${YELLOW}=== Postgres Logs ===${RESET}"
-  kubectl logs statefulset/caatch-postgres --tail=100 || true
+  echo -e "\n${YELLOW}=== Cockroach Logs ===${RESET}"
+  kubectl logs statefulset/caatch-cockroach --tail=100 || true
 
   echo -e "\n${YELLOW}=== Pod Descriptions ===${RESET}"
   kubectl describe pods || true
@@ -161,7 +161,7 @@ if $RUN_INTEGRATION; then
   fi
 
   step "Waiting for deployments to become available"
-  if kubectl wait pod -l app=postgres --for=condition=ready --timeout=120s && \
+  if kubectl wait pod -l app=cockroach --for=condition=ready --timeout=120s && \
      kubectl wait deployment/caatch-backend  --for=condition=available --timeout=120s && \
      kubectl wait deployment/caatch-frontend --for=condition=available --timeout=120s; then
     ok "kubectl wait (deployments ready)"
