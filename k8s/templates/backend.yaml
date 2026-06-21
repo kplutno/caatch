@@ -17,6 +17,35 @@ spec:
         {{- include "caatch.selectorLabels" . | nindent 8 }}
         app: backend
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        command:
+        - python
+        - -c
+        - |
+          import time, socket, urllib.parse, os
+          db_url = os.getenv("DATABASE_URL")
+          if db_url:
+              url = db_url.replace("+asyncpg", "")
+              parsed = urllib.parse.urlparse(url)
+              host = parsed.hostname
+              port = parsed.port or 5432
+              print(f"Waiting for database at {host}:{port}...")
+              for _ in range(60):
+                  try:
+                      with socket.create_connection((host, port), timeout=2):
+                          print("Database is ready!")
+                          break
+                  except Exception:
+                      time.sleep(2)
+              else:
+                  print("Database connection timed out.")
+                  exit(1)
+        env:
+        - name: DATABASE_URL
+          value: "postgresql+asyncpg://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@{{ default (printf "%s-postgres" (include "caatch.fullname" .)) .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.database }}"
       containers:
       - name: backend
         image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"

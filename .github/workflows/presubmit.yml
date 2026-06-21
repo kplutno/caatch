@@ -90,11 +90,14 @@ jobs:
       - name: Build & deploy to cluster
         run: |
           chmod +x deploy.sh
-          # Pass an explicit tag so both images share the same value across steps
-          ./deploy.sh dev ci-${{ github.run_id }}
+          # Pass the commit hash as the tag
+          ./deploy.sh dev ${{ github.sha }}
 
       - name: Wait for deployments to become available
         run: |
+          kubectl wait pod -l app=postgres \
+            --for=condition=ready \
+            --timeout=120s
           kubectl wait deployment/caatch-backend \
             --for=condition=available \
             --timeout=120s

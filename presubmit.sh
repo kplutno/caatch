@@ -135,7 +135,8 @@ if $RUN_INTEGRATION; then
   fi
 
   step "Waiting for deployments to become available"
-  if kubectl wait deployment/caatch-backend  --for=condition=available --timeout=120s && \
+  if kubectl wait pod -l app=postgres --for=condition=ready --timeout=120s && \
+     kubectl wait deployment/caatch-backend  --for=condition=available --timeout=120s && \
      kubectl wait deployment/caatch-frontend --for=condition=available --timeout=120s; then
     ok "kubectl wait (deployments ready)"
   else
