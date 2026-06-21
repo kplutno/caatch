@@ -1,8 +1,10 @@
 # Caatch
 
-**Caatch** is a full-stack political connection tracking application designed to map and monitor relationships between political figures, events, locations, and organizations. 
+**Caatch** is a full-stack political connection tracking application for mapping and monitoring relationships between political figures, events, locations, and organizations.
 
-It features an asynchronous **Python (FastAPI)** backend using SQLModel, a interactive **Next.js** frontend displaying SVG circular ego-networks, and a **PostgreSQL** database, deployed onto a local Kubernetes (Kind) cluster using **Helm**.
+It features an asynchronous **Python (FastAPI)** backend, an interactive **Next.js** frontend with a draggable SVG ego-network explorer, a **PostgreSQL** database, and is deployed onto a local Kubernetes (Kind) cluster via **Helm**.
+
+---
 
 ## Project Structure
 
@@ -10,84 +12,168 @@ It features an asynchronous **Python (FastAPI)** backend using SQLModel, a inter
 caatch/
 ├── backend/
 │   ├── app/
-│   │   ├── database.py      # SQLAlchemy / SQLModel async connection setup
-│   │   ├── main.py          # FastAPI application & CTE graph paths
-│   │   └── models.py        # Schema models (Entity, Connection) with JSON properties
-│   │   
-│   ├── migrations/          # Alembic database migrations
-│   ├── tests/
-│   │   ├── conftest.py      # Async client test fixture overrides
-│   │   └── test_api.py      # Extensive backend API tests using in-memory SQLite
-│   ├── Dockerfile
-│   └── pyproject.toml       # Poetry package config
+│   │   ├── api/
+│   │   └── models/
+│   ├── migrations/
+│   └── tests/
 ├── frontend/
-│   ├── src/app/
-│   │   ├── layout.js        # Root layout config
-│   │   ├── globals.css      # Light styling rules
-│   │   └── page.js          # SVG graph interface & CRUD panels
-│   └── Dockerfile
+│   └── src/app/
+│       └── components/
 ├── k8s/
-│   ├── templates/           # Helm templates (backend, frontend, postgres, ingress)
-│   ├── Chart.yaml           # Helm chart definition
-│   └── values-dev.yaml      # Staging & development override configurations
-├── deploy.sh                # Unique timestamp image tagging & rollout automation script
-└── README.md
+│   └── templates/
+├── tests/
+│   └── integration/
+├── deploy.sh
+└── presubmit.sh
 ```
+
+---
 
 ## Quick Start
 
-### 1. Deploy the Application
+### Prerequisites
 
-Deploy the stack locally using the rollout script. This builds container images tagged with dynamic human-readable timestamps (`YYYYMMDD-HHMMSS`), loads them into your Kind cluster, executes Helm upgrades, and handles port-forwarding for the Postgres DB, backend, and frontend.
+- [Docker](https://docs.docker.com/get-docker/)
+- [Kind](https://kind.sigs.k8s.io/) + [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Helm](https://helm.sh/docs/intro/install/)
+- [Poetry](https://python-poetry.org/docs/#installation) (Python 3.12)
+- [Node.js](https://nodejs.org/) 20+
+
+### 1. Deploy the full stack
+
+Builds container images tagged with a `YYYYMMDD-HHMMSS` timestamp, loads them into the Kind cluster, runs a Helm upgrade, and sets up port-forwarding:
 
 ```bash
 chmod +x deploy.sh
 ./deploy.sh dev
 ```
 
-This maps:
-- **Frontend UI**: [http://localhost:3000](http://localhost:3000)
-- **FastAPI Backend**: [http://localhost:8000](http://localhost:8000)
-- **PostgreSQL**: `localhost:5432`
+| Service | Local URL |
+|---------|-----------|
+| Frontend UI | <http://localhost:3000> |
+| FastAPI Backend | <http://localhost:8000> |
+| PostgreSQL | `localhost:5432` |
 
-### 2. View Status
-Verify Kubernetes resources are healthy:
+### 2. Verify the cluster
+
 ```bash
 kubectl get pods
 kubectl get svc
 ```
 
-### 3. Run Backend Test Suite
-The backend features an asynchronous test suite executing against an in-memory SQLite instance:
+---
+
+## Development
+
+### Backend
+
 ```bash
 cd backend
 poetry install
+
+# Run the dev server (requires a running Postgres)
+poetry run uvicorn app.main:app --reload
+
+# Run tests (uses in-memory SQLite — no Postgres needed)
 poetry run pytest tests/ -v
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev       # http://localhost:3000
 ```
 
 ---
 
-## API Endpoints
+## Running Presubmits Locally
 
-### Entities CRUD
-* `POST /api/entities`: Create a new person, place, event, or organization.
-* `GET /api/entities`: Get list of entities (supports type filtering, e.g., `?type=person`).
-* `GET /api/entities/{entity_id}`: Read metadata of a single entity.
-* `PUT /api/entities/{entity_id}`: Update properties and metadata.
-* `DELETE /api/entities/{entity_id}`: Cascade deletes entity and connected edges.
+Use `presubmit.sh` to run the same checks that GitHub Actions runs before pushing:
 
-### Connections CRUD
-* `POST /api/connections`: Create a new relationship (e.g. `MEMBER_OF`, `KNOWS`).
-* `GET /api/connections`: List all connection edges.
-* `DELETE /api/connections/{connection_id}`: Delete an edge.
+```bash
+# Everything (backend lint + type check + tests, frontend lint + build)
+./presubmit.sh
 
-### Graph and Networks
-* `GET /api/graph`: Returns complete nodes and edges list.
-* `GET /api/entities/{entity_id}/network?depth=2`: Returns recursive ego-network subgraph (uses a SQL recursive CTE path walk compatible with SQLite/Postgres).
+# One side only
+./presubmit.sh --backend
+./presubmit.sh --frontend
+
+# Include K8s integration tests (requires a live Kind cluster)
+./presubmit.sh --integration
+```
 
 ---
 
-## Technical Specifications
-* **Database**: PostgreSQL (StatefulSet) using native JSONB columns and UUID primary keys. Cross-compatible SQLite translations are supported at runtime.
-* **Network Graph Layout**: Custom UI rendering implementing circular geometry SVG layout nodes centered dynamically.
-* **Development Flow**: Deployments use timestamped image tags (`deploy.sh`) to prevent Kind node containerd cache collision issues.
+## CI / GitHub Actions
+
+| Workflow | Trigger | Jobs |
+|----------|---------|------|
+| `presubmit.yml` | Push / PR → `main` | Backend lint & tests, Frontend lint & build, K8s integration tests |
+| `frontend.yml` | Push / PR → `main` (frontend paths only) | ESLint → Next.js build |
+
+### Backend checks (`Ruff` + `Mypy` + `Pytest`)
+
+```bash
+cd backend
+poetry run ruff check .           # linting
+poetry run ruff format --check .  # formatting
+poetry run mypy .                 # type checking
+poetry run pytest tests/ -v       # unit tests
+```
+
+### Frontend checks (`ESLint` + `next build`)
+
+```bash
+cd frontend
+npm run lint    # ESLint (next/core-web-vitals)
+npm run build   # production build check
+```
+
+---
+
+## API Reference
+
+### Health
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/health` | Returns service status and build tag |
+
+### Entities
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/entities` | Create a new entity (person, place, event, organization, other) |
+| `GET` | `/api/entities` | List entities — supports `?type=`, `?search=`, `?page=`, `?page_size=` |
+| `GET` | `/api/entities/{id}` | Get a single entity |
+| `PUT` | `/api/entities/{id}` | Update an entity |
+| `DELETE` | `/api/entities/{id}` | Delete entity and all its connections (cascade) |
+| `GET` | `/api/entities/{id}/network?depth=2` | Recursive ego-network subgraph (SQL CTE) |
+
+### Connections
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/connections` | Create a connection (validated against allowed rules) |
+| `GET` | `/api/connections` | List connections — supports `?page=`, `?page_size=` |
+| `DELETE` | `/api/connections/{id}` | Delete a connection |
+| `GET` | `/api/connections/rules` | Fetch allowed connection type rules |
+
+### Graph
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/graph` | Full graph — all nodes and edges |
+
+---
+
+## Technical Notes
+
+- **Database**: PostgreSQL with UUID primary keys and JSONB `properties` columns. Tests run against in-memory SQLite via `aiosqlite`.
+- **Pagination**: All list endpoints return a generic `PaginatedResponse[T]` with `total`, `page`, `page_size`, and `total_pages`.
+- **Connection validation**: Allowed connection types are enforced server-side via `ALLOWED_CONNECTIONS` rules (source type → label → allowed target types).
+- **Network graph**: Ego-networks are computed with a recursive SQL CTE. The frontend renders them as a draggable SVG canvas with layered node layout.
+- **Image tagging**: `deploy.sh` uses `YYYYMMDD-HHMMSS` timestamps to prevent Kind's containerd cache from serving stale images.
+- **Type safety**: Backend is fully typed — `py.typed` markers (PEP 561) are present on all packages; Mypy runs in strict-import mode.
