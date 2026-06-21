@@ -14,6 +14,8 @@ class EntityType(str, Enum):
 
 
 class EntityBase(SQLModel):
+    model_config = {"use_enum_values": True}
+
     name: str = Field(index=True)
     type: EntityType = Field(sa_type=AutoString, index=True)
     description: Optional[str] = None

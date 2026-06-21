@@ -78,6 +78,8 @@ ALLOWED_CONNECTIONS = {
 
 
 class ConnectionBase(SQLModel):
+    model_config = {"use_enum_values": True}
+
     source_id: uuid.UUID = Field(foreign_key="entity.id", index=True)
     target_id: uuid.UUID = Field(foreign_key="entity.id", index=True)
     label: ConnectionLabel = Field(sa_type=AutoString, index=True)

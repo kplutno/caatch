@@ -105,6 +105,13 @@ if $RUN_FRONTEND; then
     fail "eslint"
   fi
 
+  step "Vitest — unit tests (npm test)"
+  if (cd "$FRONTEND_DIR" && npm test); then
+    ok "frontend unit tests"
+  else
+    fail "frontend unit tests"
+  fi
+
   step "Next.js — build check (npm run build)"
   if (cd "$FRONTEND_DIR" && NEXT_TELEMETRY_DISABLED=1 npm run build); then
     ok "next build"
