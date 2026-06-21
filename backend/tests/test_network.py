@@ -68,8 +68,12 @@ async def test_ego_network_multidegree(client: AsyncClient):
 async def test_bidirectional_network_traversal(client: AsyncClient):
     """Network traversal must find nodes connected to the anchor in any direction."""
     # A -- B: B is only reachable because connection target → A is bidirectional
-    a = (await client.post("/api/entities", json={"name": "A", "type": "person"})).json()
-    b = (await client.post("/api/entities", json={"name": "B", "type": "person"})).json()
+    a = (
+        await client.post("/api/entities", json={"name": "A", "type": "person"})
+    ).json()
+    b = (
+        await client.post("/api/entities", json={"name": "B", "type": "person"})
+    ).json()
 
     await client.post(
         "/api/connections",
@@ -125,8 +129,12 @@ async def test_get_full_graph(client: AsyncClient):
 
 async def test_full_graph_with_data(client: AsyncClient):
     """GET /api/graph returns nodes and edges when data exists."""
-    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
-    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "P", "type": "person"})
+    ).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "PL", "type": "place"})
+    ).json()
     await client.post(
         "/api/connections",
         json={"source_id": p["id"], "target_id": pl["id"], "label": "LIVES_IN"},

@@ -5,14 +5,14 @@ import uuid
 import math
 
 from app.database import get_session
-from app.models import (
-    Entity,
+from app.models.entity import Entity
+from app.models.connection import (
     Connection,
     ConnectionCreate,
     ConnectionRead,
     ALLOWED_CONNECTIONS,
-    PaginatedResponse,
 )
+from app.models.pagination import PaginatedResponse
 
 router = APIRouter(prefix="/api/connections")
 
@@ -70,7 +70,7 @@ async def read_connections(
     result = await session.exec(statement)
 
     return PaginatedResponse(
-        items=result.all(),
+        items=list(result.all()),
         total=total,
         page=page,
         page_size=page_size,

@@ -106,8 +106,12 @@ async def test_delete_connection_success(client: AsyncClient):
 
 async def test_read_connections_list(client: AsyncClient):
     """GET /api/connections returns all existing connections."""
-    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
-    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "P", "type": "person"})
+    ).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "PL", "type": "place"})
+    ).json()
 
     await client.post(
         "/api/connections",
@@ -123,8 +127,12 @@ async def test_read_connections_list(client: AsyncClient):
 
 async def test_connection_with_description(client: AsyncClient):
     """Connection description field is persisted and returned."""
-    p = (await client.post("/api/entities", json={"name": "A", "type": "person"})).json()
-    pl = (await client.post("/api/entities", json={"name": "B", "type": "place"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "A", "type": "person"})
+    ).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "B", "type": "place"})
+    ).json()
 
     conn = (
         await client.post(
@@ -164,7 +172,9 @@ async def test_connection_invalid_labels(client: AsyncClient):
 async def test_connection_invalid_label_for_source_type(client: AsyncClient):
     """A label not defined for the source type should return 400."""
     o = (await client.post("/api/entities", json={"name": "X", "type": "other"})).json()
-    p = (await client.post("/api/entities", json={"name": "Y", "type": "person"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "Y", "type": "person"})
+    ).json()
 
     # 'other' type only supports OTHER label — KNOWS should be rejected
     resp = await client.post(
@@ -177,8 +187,12 @@ async def test_connection_invalid_label_for_source_type(client: AsyncClient):
 
 async def test_connection_knows_person_to_person(client: AsyncClient):
     """person KNOWS person is a valid connection."""
-    p1 = (await client.post("/api/entities", json={"name": "Bob", "type": "person"})).json()
-    p2 = (await client.post("/api/entities", json={"name": "Carol", "type": "person"})).json()
+    p1 = (
+        await client.post("/api/entities", json={"name": "Bob", "type": "person"})
+    ).json()
+    p2 = (
+        await client.post("/api/entities", json={"name": "Carol", "type": "person"})
+    ).json()
 
     resp = await client.post(
         "/api/connections",
@@ -190,8 +204,12 @@ async def test_connection_knows_person_to_person(client: AsyncClient):
 
 async def test_connection_works_with_person_to_person(client: AsyncClient):
     """person WORKS_WITH person is a valid connection."""
-    p1 = (await client.post("/api/entities", json={"name": "Dave", "type": "person"})).json()
-    p2 = (await client.post("/api/entities", json={"name": "Eve", "type": "person"})).json()
+    p1 = (
+        await client.post("/api/entities", json={"name": "Dave", "type": "person"})
+    ).json()
+    p2 = (
+        await client.post("/api/entities", json={"name": "Eve", "type": "person"})
+    ).json()
 
     resp = await client.post(
         "/api/connections",
@@ -202,8 +220,12 @@ async def test_connection_works_with_person_to_person(client: AsyncClient):
 
 async def test_connection_attended_person_to_event(client: AsyncClient):
     """person ATTENDED event is a valid connection."""
-    p = (await client.post("/api/entities", json={"name": "Frank", "type": "person"})).json()
-    ev = (await client.post("/api/entities", json={"name": "Summit", "type": "event"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "Frank", "type": "person"})
+    ).json()
+    ev = (
+        await client.post("/api/entities", json={"name": "Summit", "type": "event"})
+    ).json()
 
     resp = await client.post(
         "/api/connections",
@@ -214,8 +236,12 @@ async def test_connection_attended_person_to_event(client: AsyncClient):
 
 async def test_connection_participated_in_person_to_event(client: AsyncClient):
     """person PARTICIPATED_IN event is a valid connection."""
-    p = (await client.post("/api/entities", json={"name": "Grace", "type": "person"})).json()
-    ev = (await client.post("/api/entities", json={"name": "Marathon", "type": "event"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "Grace", "type": "person"})
+    ).json()
+    ev = (
+        await client.post("/api/entities", json={"name": "Marathon", "type": "event"})
+    ).json()
 
     resp = await client.post(
         "/api/connections",
@@ -227,7 +253,9 @@ async def test_connection_participated_in_person_to_event(client: AsyncClient):
 async def test_connection_organization_located_in_place(client: AsyncClient):
     """organization LOCATED_IN place is a valid connection."""
     org = (
-        await client.post("/api/entities", json={"name": "ACME Corp", "type": "organization"})
+        await client.post(
+            "/api/entities", json={"name": "ACME Corp", "type": "organization"}
+        )
     ).json()
     place = (
         await client.post("/api/entities", json={"name": "New York", "type": "place"})
@@ -258,8 +286,12 @@ async def test_connection_event_located_in_place(client: AsyncClient):
 
 async def test_connection_other_entity_other_label(client: AsyncClient):
     """entity of type 'other' can use label OTHER."""
-    o1 = (await client.post("/api/entities", json={"name": "X", "type": "other"})).json()
-    o2 = (await client.post("/api/entities", json={"name": "Y", "type": "other"})).json()
+    o1 = (
+        await client.post("/api/entities", json={"name": "X", "type": "other"})
+    ).json()
+    o2 = (
+        await client.post("/api/entities", json={"name": "Y", "type": "other"})
+    ).json()
 
     resp = await client.post(
         "/api/connections",

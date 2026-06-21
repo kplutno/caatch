@@ -3,6 +3,7 @@ import os
 
 router = APIRouter(prefix="/api")
 
+
 @router.get("/health")
 async def health():
     return {
@@ -10,6 +11,7 @@ async def health():
         "service": "backend",
         "build_tag": os.getenv("IMAGE_TAG", "local-dev"),
     }
+
 
 @router.get("/greet")
 async def greet(name: str = "World"):

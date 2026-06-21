@@ -5,15 +5,19 @@ from sqlalchemy import text
 import uuid
 
 from app.database import get_session
-from app.models import Entity, Connection, GraphRead
+from app.models.entity import Entity
+from app.models.connection import Connection
+from app.models.graph import GraphRead
 
 router = APIRouter(prefix="/api")
+
 
 @router.get("/graph", response_model=GraphRead)
 async def get_full_graph(session: AsyncSession = Depends(get_session)):
     entities = (await session.exec(select(Entity))).all()
     connections = (await session.exec(select(Connection))).all()
     return {"nodes": entities, "edges": connections}
+
 
 @router.get("/entities/{entity_id}/network")
 async def get_entity_network(
@@ -53,6 +57,7 @@ async def get_entity_network(
 
     # Bypass SQLModel wrapper warning for raw CTE execution by using base SQLAlchemy execution
     from sqlmodel.ext.asyncio.session import AsyncSession as SQLModelAsyncSession
+
     result = await super(SQLModelAsyncSession, session).execute(
         query, {"entity_id": str(entity_id), "depth": depth}
     )

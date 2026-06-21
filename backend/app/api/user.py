@@ -4,9 +4,10 @@ from sqlmodel import select
 from typing import List
 
 from app.database import get_session
-from app.models import User, UserCreate, UserRead
+from app.models.user import User, UserCreate, UserRead
 
 router = APIRouter(prefix="/api/users")
+
 
 @router.post("", response_model=UserRead)
 async def create_user(user: UserCreate, session: AsyncSession = Depends(get_session)):
@@ -19,6 +20,7 @@ async def create_user(user: UserCreate, session: AsyncSession = Depends(get_sess
     except Exception:
         await session.rollback()
         raise HTTPException(status_code=400, detail="Email already exists")
+
 
 @router.get("", response_model=List[UserRead])
 async def read_users(session: AsyncSession = Depends(get_session)):

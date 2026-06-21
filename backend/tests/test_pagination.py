@@ -69,8 +69,12 @@ async def test_entities_pagination_page_size_cap(client: AsyncClient):
 
 async def test_connections_pagination_envelope(client: AsyncClient):
     """GET /api/connections returns a paginated envelope with correct metadata."""
-    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
-    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "P", "type": "person"})
+    ).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "PL", "type": "place"})
+    ).json()
     for _ in range(4):
         await client.post(
             "/api/connections",
@@ -89,8 +93,12 @@ async def test_connections_pagination_envelope(client: AsyncClient):
 
 async def test_connections_pagination_second_page(client: AsyncClient):
     """Second page of connections contains the remaining items."""
-    p = (await client.post("/api/entities", json={"name": "P", "type": "person"})).json()
-    pl = (await client.post("/api/entities", json={"name": "PL", "type": "place"})).json()
+    p = (
+        await client.post("/api/entities", json={"name": "P", "type": "person"})
+    ).json()
+    pl = (
+        await client.post("/api/entities", json={"name": "PL", "type": "place"})
+    ).json()
     for _ in range(4):
         await client.post(
             "/api/connections",

@@ -6,9 +6,12 @@ import math
 from typing import Optional
 
 from app.database import get_session
-from app.models import Entity, EntityCreate, EntityRead, Connection, PaginatedResponse
+from app.models.entity import Entity, EntityCreate, EntityRead
+from app.models.connection import Connection
+from app.models.pagination import PaginatedResponse
 
 router = APIRouter(prefix="/api/entities")
+
 
 @router.post("", response_model=EntityRead)
 async def create_entity(
@@ -19,6 +22,7 @@ async def create_entity(
     await session.commit()
     await session.refresh(db_entity)
     return db_entity
+
 
 @router.get("", response_model=PaginatedResponse[EntityRead])
 async def read_entities(
@@ -36,8 +40,8 @@ async def read_entities(
         count_statement = count_statement.where(Entity.type == type)
 
     if search:
-        statement = statement.where(Entity.name.ilike(f"%{search}%"))
-        count_statement = count_statement.where(Entity.name.ilike(f"%{search}%"))
+        statement = statement.where(Entity.name.ilike(f"%{search}%"))  # type: ignore[attr-defined]
+        count_statement = count_statement.where(Entity.name.ilike(f"%{search}%"))  # type: ignore[attr-defined]
 
     total = (await session.exec(count_statement)).one()
     total_pages = max(1, math.ceil(total / page_size))
@@ -46,12 +50,13 @@ async def read_entities(
     result = await session.exec(statement)
 
     return PaginatedResponse(
-        items=result.all(),
+        items=list(result.all()),
         total=total,
         page=page,
         page_size=page_size,
         total_pages=total_pages,
     )
+
 
 @router.get("/{entity_id}", response_model=EntityRead)
 async def read_entity(
@@ -61,6 +66,7 @@ async def read_entity(
     if not db_entity:
         raise HTTPException(status_code=404, detail="Entity not found")
     return db_entity
+
 
 @router.put("/{entity_id}", response_model=EntityRead)
 async def update_entity(
@@ -79,6 +85,7 @@ async def update_entity(
     await session.commit()
     await session.refresh(db_entity)
     return db_entity
+
 
 @router.delete("/{entity_id}")
 async def delete_entity(

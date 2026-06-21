@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Type Checker (Mypy)
         working-directory: ./backend
-        run: poetry run mypy . --ignore-missing-imports
+        run: poetry run mypy .
 
       - name: Run Async Backend Unit Tests (Pytest)
         working-directory: ./backend

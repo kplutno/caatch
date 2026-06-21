@@ -1,3 +1,1 @@
-from app.api import system, user, entity, connection, graph
-
-__all__ = ["system", "user", "entity", "connection", "graph"]
+# API package — routers are imported directly in app/main.py
