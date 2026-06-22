@@ -83,8 +83,7 @@ export default function LinkEntitiesForm({
       label,
       description: description || null,
       start_time: start_time || null,
-      end_time: end_time || null,
-      properties: {}
+      end_time: end_time || null
     });
 
     if (success) {

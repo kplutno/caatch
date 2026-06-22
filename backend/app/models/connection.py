@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any, List
 from sqlmodel import Field, SQLModel, Column, AutoString, select, col
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy import JSON, UUID
+from sqlalchemy import UUID
 from enum import Enum
 
 from app.models.person import Person
@@ -59,7 +59,6 @@ class ConnectionBase(SQLModel):
     description: Optional[str] = None
     start_time: Optional[datetime] = Field(default=None, nullable=True)
     end_time: Optional[datetime] = Field(default=None, nullable=True)
-    properties: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
 
 
 class Connection(ConnectionBase, table=True):

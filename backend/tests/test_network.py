@@ -92,7 +92,6 @@ async def test_connections_and_graph(client: AsyncClient):
         "target_id": org_id,
         "label": "MEMBER_OF",
         "description": "Moved there in 2020",
-        "properties": {},
     }
     conn_resp = await client.post("/api/connections", json=conn_payload)
     assert conn_resp.status_code == 200

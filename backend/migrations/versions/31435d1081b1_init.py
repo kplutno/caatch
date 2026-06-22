@@ -1,8 +1,8 @@
 """init
 
-Revision ID: e02befdf275b
+Revision ID: 31435d1081b1
 Revises:
-Create Date: 2026-06-22 19:11:27.929077
+Create Date: 2026-06-22 19:34:50.344778
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "e02befdf275b"
+revision: str = "31435d1081b1"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,7 +31,6 @@ def upgrade() -> None:
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("start_time", sa.DateTime(), nullable=True),
         sa.Column("end_time", sa.DateTime(), nullable=True),
-        sa.Column("properties", sa.JSON(), nullable=True),
         sa.Column("id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -44,17 +43,17 @@ def upgrade() -> None:
     )
     op.create_table(
         "event",
-        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_event_name"), "event", ["name"], unique=False)
     op.create_table(
         "organization",
-        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -62,17 +61,17 @@ def upgrade() -> None:
     )
     op.create_table(
         "person",
-        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_person_name"), "person", ["name"], unique=False)
     op.create_table(
         "place",
-        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_place_name"), "place", ["name"], unique=False)

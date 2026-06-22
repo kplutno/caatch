@@ -90,17 +90,6 @@ class TestConnectionCRUD:
         )
         assert conn["description"] == "Moved here in 2022"
 
-    def test_create_connection_with_properties(self):
-        person = _create_entity("person", "Props Person")
-        place = _create_entity("place", "Props Place")
-        conn = _create_connection(
-            person["id"],
-            place["id"],
-            "LOCATED_IN",
-            properties={"since": 2022, "primary": True},
-        )
-        assert conn["properties"]["since"] == 2022
-
     def test_create_connection_temporal_validation_success(self):
         person = _create_entity("person", "Temp Success Person")
         org = _create_entity("organization", "Temp Success Org")

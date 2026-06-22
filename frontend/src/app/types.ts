@@ -19,7 +19,6 @@ export interface Connection {
   description?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  properties: Record<string, any>;
 }
 
 export interface ConnectionCreate {
@@ -29,7 +28,6 @@ export interface ConnectionCreate {
   description?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  properties: Record<string, any>;
 }
 
 export interface NetworkNode {

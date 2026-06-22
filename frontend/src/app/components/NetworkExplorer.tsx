@@ -31,6 +31,33 @@ export default function NetworkExplorer({
   // Keep track of hovered node for information display overlay
   const [hoveredNode, setHoveredNode] = useState<NetworkNode | null>(null);
 
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Sync filters with selected focusEntityId
+  useEffect(() => {
+    if (focusEntityId) {
+      const focusedEntity = entities.find(e => e.id === focusEntityId);
+      if (focusedEntity) {
+        if (selectedType !== 'all' && selectedType !== focusedEntity.type) {
+          setSelectedType(focusedEntity.type);
+        }
+        if (searchQuery && !focusedEntity.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          setSearchQuery('');
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusEntityId, entities]);
+
+  const filteredEntities = useMemo(() => {
+    return entities.filter(e => {
+      const matchesType = selectedType === 'all' || e.type === selectedType;
+      const matchesQuery = !searchQuery || e.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesType && matchesQuery;
+    });
+  }, [entities, selectedType, searchQuery]);
+
   // Recalculate initial layout only when the focus entity or network nodes change
   useEffect(() => {
     if (!focusEntityId || !focusNetwork.nodes || focusNetwork.nodes.length === 0) {
@@ -193,16 +220,37 @@ export default function NetworkExplorer({
     <div className="flex-1 flex flex-col space-y-4">
       {/* Explorer Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <GlobeAltIcon className="w-5 h-5 text-sky-500" />
           <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Select Focus Entity:</label>
+          
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50"
+          >
+            <option value="all">All Types</option>
+            <option value="person">Person</option>
+            <option value="organization">Organization</option>
+            <option value="place">Place</option>
+            <option value="event">Event</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-sky-500/50 w-36"
+          />
+
           <select
             value={focusEntityId || ''}
             onChange={(e) => setFocusEntityId(e.target.value || null)}
-            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50"
+            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 max-w-xs"
           >
             <option value="">-- No Focus Selected --</option>
-            {entities.map(e => (
+            {filteredEntities.map(e => (
               <option key={e.id} value={e.id}>{e.name} ({e.type})</option>
             ))}
           </select>

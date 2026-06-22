@@ -11,7 +11,6 @@ async def test_connection_invalid_entities(client: AsyncClient):
         "source_id": str(uuid.uuid4()),
         "target_id": str(uuid.uuid4()),
         "label": "LOCATED_IN",
-        "properties": {},
     }
     response = await client.post("/api/connections", json=conn_payload)
     assert response.status_code == 400
@@ -58,7 +57,6 @@ async def test_connection_validation_rules(client: AsyncClient):
         "source_id": p_id,
         "target_id": org_id,
         "label": "MEMBER_OF",
-        "properties": {},
     }
     resp = await client.post("/api/connections", json=valid_conn)
     assert resp.status_code == 200
@@ -70,7 +68,6 @@ async def test_connection_validation_rules(client: AsyncClient):
         "source_id": p_id,
         "target_id": p2_id,
         "label": "MEMBER_OF",
-        "properties": {},
     }
     resp = await client.post("/api/connections", json=invalid_conn)
     assert resp.status_code == 400
@@ -143,7 +140,6 @@ async def test_connection_invalid_labels(client: AsyncClient):
         "source_id": e1["id"],
         "target_id": e2["id"],
         "label": "LOCATED_IN",  # Person cannot LOCATED_IN an Organization
-        "properties": {},
     }
     resp = await client.post("/api/connections", json=invalid_conn)
     assert resp.status_code == 400
