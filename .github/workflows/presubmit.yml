@@ -105,13 +105,11 @@ jobs:
             --for=condition=available \
             --timeout=120s
 
-      - name: Start port-forwarding
+      - name: Start port-forwarding and wait for backend
         run: |
-          nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 >/dev/null 2>&1 &
-          nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 >/dev/null 2>&1 &
+          nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 > /dev/null 2>&1 &
+          nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 > /dev/null 2>&1 &
 
-      - name: Wait for backend to accept connections
-        run: |
           echo "Polling backend health endpoint..."
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/api/health > /dev/null; then
