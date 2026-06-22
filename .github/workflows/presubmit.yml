@@ -107,8 +107,11 @@ jobs:
 
       - name: Start port-forwarding and wait for backend
         run: |
-          nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 > /dev/null 2>&1 &
-          nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 > /dev/null 2>&1 &
+          nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 > /tmp/pf-backend.log  2>&1 &
+          nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 > /tmp/pf-frontend.log 2>&1 &
+
+          # Give the tunnels a moment to establish before polling
+          sleep 3
 
           echo "Polling backend health endpoint..."
           for i in $(seq 1 30); do
@@ -120,8 +123,12 @@ jobs:
             sleep 2
           done
           echo "Backend did not become ready in time."
+          echo "--- port-forward backend log ---"
+          cat /tmp/pf-backend.log || true
+          echo "--- port-forward frontend log ---"
+          cat /tmp/pf-frontend.log || true
           kubectl describe pods
-          kubectl logs -l app=caatch-backend --tail=50
+          kubectl logs -l app=backend --tail=50
           exit 1
 
       - name: Set up Python for Integration
