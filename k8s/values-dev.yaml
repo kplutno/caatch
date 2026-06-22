@@ -3,12 +3,12 @@ environment: dev
 backend:
   replicas: 1
   image:
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
 frontend:
   replicas: 1
   image:
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
 cockroach:
   storage:
