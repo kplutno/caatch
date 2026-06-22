@@ -5,18 +5,13 @@ from sqlalchemy import text
 import uuid
 
 from app.database import get_session
-from app.models.entity import Entity
+from app.models.connection import (
+    get_entity_by_id,
+    get_entities_by_ids,
+)
 from app.models.connection import Connection
-from app.models.graph import GraphRead
 
 router = APIRouter(prefix="/api")
-
-
-@router.get("/graph", response_model=GraphRead)
-async def get_full_graph(session: AsyncSession = Depends(get_session)):
-    entities = (await session.exec(select(Entity))).all()
-    connections = (await session.exec(select(Connection))).all()
-    return {"nodes": entities, "edges": connections}
 
 
 @router.get("/entities/{entity_id}/network")
@@ -24,12 +19,11 @@ async def get_entity_network(
     entity_id: uuid.UUID, depth: int = 2, session: AsyncSession = Depends(get_session)
 ):
     # Verify entity exists
-    entity = await session.get(Entity, entity_id)
+    entity = await get_entity_by_id(session, entity_id)
     if not entity:
         raise HTTPException(status_code=404, detail="Entity not found")
 
     # 1. Use recursive CTE to fetch IDs of all nodes connected within `depth` steps
-    # We cast to VARCHAR to support both CockroachDB UUIDs and SQLite string representation.
     query = text("""
         WITH RECURSIVE ConnectedNodes AS (
             -- Anchor: starting node (normalized to 32-char hex string)
@@ -55,7 +49,6 @@ async def get_entity_network(
         SELECT DISTINCT entity_id FROM ConnectedNodes;
     """)
 
-    # Bypass SQLModel wrapper warning for raw CTE execution by using base SQLAlchemy execution
     from sqlmodel.ext.asyncio.session import AsyncSession as SQLModelAsyncSession
 
     result = await super(SQLModelAsyncSession, session).execute(
@@ -69,13 +62,11 @@ async def get_entity_network(
         node_ids = [entity_id]
 
     # 2. Fetch the corresponding entities
-    from sqlmodel import col
-
-    entities_stmt = select(Entity).where(col(Entity.id).in_(node_ids))
-    entities_res = await session.exec(entities_stmt)
-    nodes = entities_res.all()
+    nodes = await get_entities_by_ids(session, node_ids)
 
     # 3. Fetch all connections among these nodes
+    from sqlmodel import col
+
     connections_stmt = select(Connection).where(
         col(Connection.source_id).in_(node_ids)
         & col(Connection.target_id).in_(node_ids)

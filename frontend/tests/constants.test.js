@@ -3,17 +3,13 @@ import { RELATION_NAMES, getTypeColor } from '../src/app/components/constants';
 
 describe('RELATION_NAMES', () => {
   it('maps every expected relation key to a human-readable label', () => {
-    expect(RELATION_NAMES.KNOWS).toBe('Knows');
     expect(RELATION_NAMES.MEMBER_OF).toBe('Member Of');
     expect(RELATION_NAMES.LOCATED_IN).toBe('Located In');
-    expect(RELATION_NAMES.LIVES_IN).toBe('Lives In');
     expect(RELATION_NAMES.ATTENDED).toBe('Attended');
-    expect(RELATION_NAMES.PARTICIPATED_IN).toBe('Participated In');
-    expect(RELATION_NAMES.WORKS_WITH).toBe('Works With');
   });
 
-  it('contains exactly 7 relation types', () => {
-    expect(Object.keys(RELATION_NAMES)).toHaveLength(7);
+  it('contains exactly 3 relation types', () => {
+    expect(Object.keys(RELATION_NAMES)).toHaveLength(3);
   });
 });
 

@@ -70,16 +70,4 @@ describe('AddEntityForm', () => {
 
     expect(nameInput).toHaveValue('Alice');
   });
-
-  it('adds a custom property tag when key is filled and + is clicked', async () => {
-    const user = userEvent.setup();
-    render(<AddEntityForm onCreateEntity={vi.fn()} />);
-
-    await user.type(screen.getByPlaceholderText(/key/i), 'Party');
-    await user.type(screen.getByPlaceholderText(/value/i), 'Democrat');
-    await user.click(screen.getByRole('button', { name: '' })); // the + icon button
-
-    expect(screen.getByText('Party:')).toBeInTheDocument();
-    expect(screen.getByText('Democrat')).toBeInTheDocument();
-  });
 });

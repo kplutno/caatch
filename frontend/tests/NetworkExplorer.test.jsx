@@ -15,7 +15,7 @@ const FOCUS_NETWORK = {
     { id: '3', name: 'NATO', type: 'organization' },
   ],
   edges: [
-    { id: 'e1', source_id: '1', target_id: '2', label: 'LIVES_IN' },
+    { id: 'e1', source_id: '1', target_id: '2', label: 'LOCATED_IN' },
     { id: 'e2', source_id: '1', target_id: '3', label: 'MEMBER_OF' },
   ],
 };

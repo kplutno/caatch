@@ -2,7 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-from app.api import system, user, entity, connection, graph
+from app.api import (
+    system,
+    user,
+    connection,
+    graph,
+    person,
+    event,
+    place,
+    organization,
+)
 
 app = FastAPI(
     title="Caatch API",
@@ -24,6 +33,9 @@ app.add_middleware(
 # --- Routers ---
 app.include_router(system.router)
 app.include_router(user.router)
-app.include_router(entity.router)
 app.include_router(connection.router)
 app.include_router(graph.router)
+app.include_router(person.router)
+app.include_router(event.router)
+app.include_router(place.router)
+app.include_router(organization.router)

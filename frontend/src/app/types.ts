@@ -3,14 +3,12 @@ export interface Entity {
   name: string;
   type: string;
   description?: string | null;
-  properties: Record<string, any>;
 }
 
 export interface EntityCreate {
   name: string;
   type: string;
   description?: string | null;
-  properties: Record<string, any>;
 }
 
 export interface Connection {
@@ -19,6 +17,8 @@ export interface Connection {
   target_id: string;
   label: string;
   description?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   properties: Record<string, any>;
 }
 
@@ -27,6 +27,8 @@ export interface ConnectionCreate {
   target_id: string;
   label: string;
   description?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   properties: Record<string, any>;
 }
 
@@ -46,6 +48,8 @@ export interface NetworkEdge {
   source_id: string;
   target_id: string;
   label: string;
+  start_time?: string | null;
+  end_time?: string | null;
   x1?: number;
   y1?: number;
   x2?: number;

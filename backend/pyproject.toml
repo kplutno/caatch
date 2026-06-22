@@ -42,3 +42,7 @@ warn_return_any = true
 disallow_untyped_defs = false   # relax for now; tighten incrementally
 # Suppress missing-stubs noise for third-party libs that don't ship types
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "migrations.*"
+ignore_errors = true

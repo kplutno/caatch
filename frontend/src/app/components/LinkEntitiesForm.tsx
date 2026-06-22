@@ -16,6 +16,8 @@ interface ConnectionState {
   target_id: string;
   label: string;
   description: string;
+  start_time: string;
+  end_time: string;
 }
 
 export default function LinkEntitiesForm({
@@ -27,7 +29,9 @@ export default function LinkEntitiesForm({
     source_id: '',
     target_id: '',
     label: '',
-    description: ''
+    description: '',
+    start_time: '',
+    end_time: ''
   });
 
   // Get selected source entity details
@@ -67,7 +71,7 @@ export default function LinkEntitiesForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { source_id, target_id, label, description } = newConnection;
+    const { source_id, target_id, label, description, start_time, end_time } = newConnection;
     if (!source_id || !target_id || !label) {
       alert('Please select source, relation, and target entities.');
       return;
@@ -78,6 +82,8 @@ export default function LinkEntitiesForm({
       target_id,
       label,
       description: description || null,
+      start_time: start_time || null,
+      end_time: end_time || null,
       properties: {}
     });
 
@@ -86,10 +92,14 @@ export default function LinkEntitiesForm({
         source_id: '',
         target_id: '',
         label: '',
-        description: ''
+        description: '',
+        start_time: '',
+        end_time: ''
       });
     }
   };
+
+  const isTemporal = ['MEMBER_OF'].includes(newConnection.label);
 
   const sourceColors = sourceEntity ? getTypeColor(sourceEntity.type) : null;
   const targetColors = targetEntity ? getTypeColor(targetEntity.type) : null;
@@ -122,7 +132,7 @@ export default function LinkEntitiesForm({
                 onChange={(e) => setNewConnection(prev => ({ ...prev, source_id: e.target.value }))}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 transition-all"
               >
-                <option value="">-- Choose Origin --</option>
+                <option value="">Choose Origin</option>
                 {entities.map(e => (
                   <option key={e.id} value={e.id}>{e.name} ({e.type})</option>
                 ))}
@@ -161,7 +171,7 @@ export default function LinkEntitiesForm({
                 onChange={(e) => setNewConnection(prev => ({ ...prev, label: e.target.value, target_id: '' }))}
                 className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 transition-all disabled:opacity-40"
               >
-                {!newConnection.source_id && <option value="">-- Choose Source First --</option>}
+                {!newConnection.source_id && <option value="">Choose Source First</option>}
                 {allowedLabels.map(lbl => (
                   <option key={lbl} value={lbl}>
                     {RELATION_NAMES[lbl] || lbl}
@@ -192,7 +202,7 @@ export default function LinkEntitiesForm({
                 onChange={(e) => setNewConnection(prev => ({ ...prev, target_id: e.target.value }))}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <option value="">-- Choose Destination --</option>
+                <option value="">Choose Destination</option>
                 {filteredTargets.map(e => (
                   <option key={e.id} value={e.id}>{e.name} ({e.type})</option>
                 ))}
@@ -221,6 +231,34 @@ export default function LinkEntitiesForm({
           </div>
         </div>
 
+        {/* Temporal fields: Start and End Time */}
+        {isTemporal && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={newConnection.start_time}
+                onChange={(e) => setNewConnection(prev => ({ ...prev, start_time: e.target.value }))}
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                End Date (Optional)
+              </label>
+              <input
+                type="date"
+                value={newConnection.end_time}
+                onChange={(e) => setNewConnection(prev => ({ ...prev, end_time: e.target.value }))}
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 transition-all"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Inputs row for Description */}
         <div className="w-full pt-1">
           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -237,7 +275,7 @@ export default function LinkEntitiesForm({
 
         <button
           type="submit"
-          className="w-full py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-xs transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          className="w-full py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs rounded-xl shadow-xs transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <SparklesIcon className="w-4 h-4" />
           Establish Link

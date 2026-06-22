@@ -152,7 +152,7 @@ export default function ConnectionsLedger({
           className={`inline-flex items-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0 ${
             showAddForm
               ? 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300'
-              : 'bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-white'
+              : 'bg-sky-500 hover:bg-sky-600 text-white'
           }`}
         >
           {showAddForm
@@ -210,9 +210,16 @@ export default function ConnectionsLedger({
                           <span className="block text-[9px] text-slate-500 uppercase tracking-wide mt-0.5">{src ? src.type : ''}</span>
                         </td>
                         <td className="p-4 text-center">
-                          <span className="px-3 py-1 bg-teal-50 border border-teal-200 rounded-full text-[9px] font-bold text-teal-700 tracking-wide">
-                            {RELATION_NAMES[c.label] || c.label}
-                          </span>
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="px-3 py-1 bg-teal-50 border border-teal-200 rounded-full text-[9px] font-bold text-teal-700 tracking-wide">
+                              {RELATION_NAMES[c.label] || c.label}
+                            </span>
+                            {(c.start_time || c.end_time) && (
+                              <span className="text-[9px] text-slate-500 font-medium whitespace-nowrap">
+                                {c.start_time ? new Date(c.start_time).toLocaleDateString() : '?'} – {c.end_time ? new Date(c.end_time).toLocaleDateString() : 'Present'}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4">
                           <span className="font-bold text-slate-800">{trg ? trg.name : 'Unknown Node'}</span>

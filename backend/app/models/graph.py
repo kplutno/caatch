@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from app.models.entity import EntityRead
-from app.models.connection import ConnectionRead
+from app.models.connection import EntityRead, ConnectionRead
 
 
 class GraphRead(BaseModel):

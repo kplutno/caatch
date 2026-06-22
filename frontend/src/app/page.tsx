@@ -56,13 +56,16 @@ export default function Home() {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const [entitiesRes, rulesRes, healthRes] = await Promise.all([
-        fetch(`${API_URL}/api/entities?page=1&page_size=200`),
+      const [personsRes, eventsRes, placesRes, orgsRes, rulesRes, healthRes] = await Promise.all([
+        fetch(`${API_URL}/api/persons?page=1&page_size=200`),
+        fetch(`${API_URL}/api/events?page=1&page_size=200`),
+        fetch(`${API_URL}/api/places?page=1&page_size=200`),
+        fetch(`${API_URL}/api/organizations?page=1&page_size=200`),
         fetch(`${API_URL}/api/connections/rules`),
         fetch(`${API_URL}/api/health`).catch(() => null)
       ]);
 
-      if (!entitiesRes.ok || !rulesRes.ok) {
+      if (!personsRes.ok || !eventsRes.ok || !placesRes.ok || !orgsRes.ok || !rulesRes.ok) {
         throw new Error('Failed to fetch initial data from backend');
       }
 
@@ -73,16 +76,26 @@ export default function Home() {
         setBackendBuildTag('unreachable');
       }
 
-      const entitiesData = await entitiesRes.json();
+      const personsData = await personsRes.json();
+      const eventsData = await eventsRes.json();
+      const placesData = await placesRes.json();
+      const orgsData = await orgsRes.json();
       const rulesData = await rulesRes.json();
 
-      setEntities(entitiesData.items);
+      const mergedEntities: Entity[] = [
+        ...personsData.items.map((x: any) => ({ ...x, type: 'person' })),
+        ...eventsData.items.map((x: any) => ({ ...x, type: 'event' })),
+        ...placesData.items.map((x: any) => ({ ...x, type: 'place' })),
+        ...orgsData.items.map((x: any) => ({ ...x, type: 'organization' })),
+      ];
+
+      setEntities(mergedEntities);
       setConnectionRules(rulesData);
       setRefreshKey(k => k + 1);
 
       // Auto-focus first entity if available and none selected
-      if (entitiesData.items.length > 0 && !focusEntityId) {
-        setFocusEntityId(entitiesData.items[0].id);
+      if (mergedEntities.length > 0 && !focusEntityId) {
+        setFocusEntityId(mergedEntities[0].id);
       }
     } catch (err: any) {
       setErrorMessage(err.message);
@@ -104,7 +117,14 @@ export default function Home() {
 
   const handleCreateEntity = async (entityData: EntityCreate): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_URL}/api/entities`, {
+      const typePlurals: Record<string, string> = {
+        person: 'persons',
+        event: 'events',
+        place: 'places',
+        organization: 'organizations'
+      };
+      const plural = typePlurals[entityData.type];
+      const res = await fetch(`${API_URL}/api/${plural}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entityData)
@@ -148,8 +168,16 @@ export default function Home() {
 
   const handleDeleteEntity = async (id: string) => {
     if (!confirm('Are you sure you want to delete this entity? All associated connections will be removed.')) return;
+    const entity = entities.find(e => e.id === id);
+    const typePlurals: Record<string, string> = {
+      person: 'persons',
+      event: 'events',
+      place: 'places',
+      organization: 'organizations'
+    };
+    const endpoint = entity ? `${API_URL}/api/${typePlurals[entity.type]}/${id}` : `${API_URL}/api/entities/${id}`;
     try {
-      const res = await fetch(`${API_URL}/api/entities/${id}`, {
+      const res = await fetch(endpoint, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(await res.text());
@@ -193,7 +221,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-extrabold tracking-tight text-sky-600">
                 Caatch Graph
               </h1>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 font-medium mt-0.5">

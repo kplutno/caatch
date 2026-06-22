@@ -9,7 +9,6 @@ Run with:
 """
 
 import requests
-import pytest
 
 BASE = "http://localhost:8000"
 

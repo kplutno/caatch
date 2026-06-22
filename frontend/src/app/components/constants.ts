@@ -2,13 +2,9 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const RELATION_NAMES: Record<string, string> = {
-  KNOWS: 'Knows',
   MEMBER_OF: 'Member Of',
   LOCATED_IN: 'Located In',
-  LIVES_IN: 'Lives In',
-  ATTENDED: 'Attended',
-  PARTICIPATED_IN: 'Participated In',
-  WORKS_WITH: 'Works With'
+  ATTENDED: 'Attended'
 };
 
 export interface TypeColor {
@@ -16,7 +12,7 @@ export interface TypeColor {
   fill: string;
   border: string;
   glow: string;
-  gradient: string;
+  bgAccent: string;
   text: string;
   iconColor: string;
 }
@@ -29,7 +25,7 @@ export const getTypeColor = (type: string): TypeColor => {
       fill: '#99f6e4',
       border: '#0d9488',
       glow: 'rgba(153, 246, 228, 0.15)',
-      gradient: 'from-teal-50/30 to-transparent',
+      bgAccent: 'bg-teal-50/30',
       text: 'text-teal-700',
       iconColor: 'text-teal-600'
     };
@@ -38,7 +34,7 @@ export const getTypeColor = (type: string): TypeColor => {
       fill: '#fecdd3',
       border: '#e11d48',
       glow: 'rgba(254, 205, 211, 0.15)',
-      gradient: 'from-rose-50/30 to-transparent',
+      bgAccent: 'bg-rose-50/30',
       text: 'text-rose-700',
       iconColor: 'text-rose-600'
     };
@@ -47,7 +43,7 @@ export const getTypeColor = (type: string): TypeColor => {
       fill: '#bae6fd',
       border: '#0284c7',
       glow: 'rgba(186, 230, 253, 0.15)',
-      gradient: 'from-sky-50/30 to-transparent',
+      bgAccent: 'bg-sky-50/30',
       text: 'text-sky-700',
       iconColor: 'text-sky-600'
     };
@@ -56,7 +52,7 @@ export const getTypeColor = (type: string): TypeColor => {
       fill: '#fde68a',
       border: '#d97706',
       glow: 'rgba(253, 230, 138, 0.15)',
-      gradient: 'from-amber-50/30 to-transparent',
+      bgAccent: 'bg-amber-50/30',
       text: 'text-amber-700',
       iconColor: 'text-amber-600'
     };
@@ -65,7 +61,7 @@ export const getTypeColor = (type: string): TypeColor => {
       fill: '#e9d5ff',
       border: '#9333ea',
       glow: 'rgba(233, 213, 255, 0.15)',
-      gradient: 'from-purple-50/30 to-transparent',
+      bgAccent: 'bg-purple-50/30',
       text: 'text-purple-700',
       iconColor: 'text-purple-600'
     };

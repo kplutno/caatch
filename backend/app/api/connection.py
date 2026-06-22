@@ -5,11 +5,12 @@ import uuid
 import math
 
 from app.database import get_session
-from app.models.entity import Entity
 from app.models.connection import (
+    get_entity_by_id,
     Connection,
     ConnectionCreate,
     ConnectionRead,
+    ConnectionLabel,
     ALLOWED_CONNECTIONS,
 )
 from app.models.pagination import PaginatedResponse
@@ -28,8 +29,8 @@ async def create_connection(
     connection: ConnectionCreate, session: AsyncSession = Depends(get_session)
 ):
     # Validate entities exist
-    source = await session.get(Entity, connection.source_id)
-    target = await session.get(Entity, connection.target_id)
+    source = await get_entity_by_id(session, connection.source_id)
+    target = await get_entity_by_id(session, connection.target_id)
     if not source or not target:
         raise HTTPException(
             status_code=400, detail="Source or target entity does not exist"
@@ -49,6 +50,24 @@ async def create_connection(
             status_code=400,
             detail=f"Connections of type '{connection.label}' from '{source.type}' to '{target.type}' are not allowed. Allowed targets: {', '.join([t.value for t in allowed_targets])}.",
         )
+
+    # Normalize empty strings to None
+    if connection.start_time == "":
+        connection.start_time = None
+    if connection.end_time == "":
+        connection.end_time = None
+
+    temporal_labels = {
+        ConnectionLabel.MEMBER_OF.value,
+    }
+    label_str = getattr(connection.label, "value", connection.label)
+
+    if label_str not in temporal_labels:
+        if connection.start_time is not None or connection.end_time is not None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Time information is not allowed for connection label '{label_str}'.",
+            )
 
     db_connection = Connection.model_validate(connection)
     session.add(db_connection)

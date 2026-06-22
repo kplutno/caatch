@@ -8,7 +8,6 @@ import {
   MapPinIcon,
   BuildingOffice2Icon,
   SparklesIcon,
-  Squares2X2Icon,
   PlusIcon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -27,7 +26,6 @@ interface EntityTypeItem {
 }
 
 const ENTITY_TYPES: EntityTypeItem[] = [
-  { value: '', label: 'All Types', Icon: Squares2X2Icon },
   { value: 'person', label: 'Person', Icon: UserIcon },
   { value: 'event', label: 'Event', Icon: CalendarDaysIcon },
   { value: 'place', label: 'Place', Icon: MapPinIcon },
@@ -124,7 +122,7 @@ export default function EntitiesList({
   const [data, setData] = useState<EntitiesDataState>({ items: [], total: 0, total_pages: 1 });
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('');
+  const [selectedType, setSelectedType] = useState('person');
   const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchPage = useCallback(async (page: number, search: string, type: string) => {
@@ -135,8 +133,15 @@ export default function EntitiesList({
         page_size: String(PAGE_SIZE),
       });
       if (search.trim()) params.set('search', search.trim());
-      if (type) params.set('type', type);
-      const res = await fetch(`${API_URL}/api/entities?${params}`);
+      
+      const typePlurals: Record<string, string> = {
+        person: 'persons',
+        event: 'events',
+        place: 'places',
+        organization: 'organizations'
+      };
+      const plural = typePlurals[type] || 'persons';
+      const res = await fetch(`${API_URL}/api/${plural}?${params}`);
       if (!res.ok) throw new Error('Failed to fetch entities');
       setData(await res.json());
     } catch (err) {
@@ -192,7 +197,7 @@ export default function EntitiesList({
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
         >
           <PlusIcon className="w-4 h-4" /> Add Entity
         </button>
@@ -254,8 +259,8 @@ export default function EntitiesList({
             const style = getTypeColor(e.type);
             return (
               <div key={e.id} className="glass-card p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
-                {/* Visual accent background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${style.gradient} opacity-40 pointer-events-none`} />
+                {/* Visual accent background */}
+                <div className={`absolute inset-0 ${style.bgAccent} opacity-40 pointer-events-none`} />
 
                 <div className="space-y-3 relative z-10">
                   <div className="flex items-center justify-between">
@@ -267,15 +272,7 @@ export default function EntitiesList({
                   <h3 className="font-bold text-slate-800 text-lg group-hover:text-slate-900 transition-colors">{e.name}</h3>
                   <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 min-h-[32px]">{e.description || 'No description provided.'}</p>
 
-                  {Object.keys(e.properties || {}).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2">
-                      {Object.entries(e.properties).map(([k, v]) => (
-                        <span key={k} className="text-[8px] px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200/60">
-                          {k}: {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
 
                 <div className="flex gap-2.5 pt-4 mt-4 border-t border-slate-100 relative z-10">

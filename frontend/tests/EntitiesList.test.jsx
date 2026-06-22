@@ -5,8 +5,8 @@ import EntitiesList from '../src/app/components/EntitiesList';
 
 const mockEntities = {
   items: [
-    { id: '1-uuid', name: 'Alice', type: 'person', description: 'A political figure.', properties: { Party: 'Democrat' } },
-    { id: '2-uuid', name: 'Geneva', type: 'place', description: 'A diplomatic hub.', properties: { Country: 'Switzerland', coordinates: { lat: 52.23, lng: 21.01 } } },
+    { id: '1-uuid', name: 'Alice', type: 'person', description: 'A political figure.' },
+    { id: '2-uuid', name: 'Geneva', type: 'place', description: 'A diplomatic hub.' },
   ],
   total: 2,
   total_pages: 1,
@@ -40,11 +40,8 @@ describe('EntitiesList', () => {
       expect(screen.getByText('Geneva')).toBeInTheDocument();
     });
 
-    // Check descriptions and properties
+    // Check descriptions
     expect(screen.getByText('A political figure.')).toBeInTheDocument();
-    expect(screen.getByText('Party: Democrat')).toBeInTheDocument();
-    expect(screen.getByText('Country: Switzerland')).toBeInTheDocument();
-    expect(screen.getByText('coordinates: {"lat":52.23,"lng":21.01}')).toBeInTheDocument();
   });
 
   it('filters entities by type when a filter chip is clicked', async () => {
@@ -66,9 +63,9 @@ describe('EntitiesList', () => {
     const placeChip = screen.getByRole('button', { name: /Place/i });
     await user.click(placeChip);
 
-    // Check that fetch was called with the type parameter set to 'place'
+    // Check that fetch was called with the correct place endpoint URL
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('type=place')
+      expect.stringContaining('places')
     );
   });
 

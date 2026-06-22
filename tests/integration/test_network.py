@@ -20,8 +20,15 @@ BASE = "http://localhost:8000"
 
 
 def _create_entity(entity_type: str, name: str, **kwargs) -> dict:
-    payload = {"name": name, "type": entity_type, **kwargs}
-    resp = requests.post(f"{BASE}/api/entities", json=payload, timeout=10)
+    type_plurals = {
+        "person": "persons",
+        "event": "events",
+        "place": "places",
+        "organization": "organizations",
+    }
+    plural = type_plurals[entity_type]
+    payload = {"name": name, **kwargs}
+    resp = requests.post(f"{BASE}/api/{plural}", json=payload, timeout=10)
     resp.raise_for_status()
     return resp.json()
 
@@ -31,35 +38,6 @@ def _create_connection(source_id: str, target_id: str, label: str, **kwargs) -> 
     resp = requests.post(f"{BASE}/api/connections", json=payload, timeout=10)
     resp.raise_for_status()
     return resp.json()
-
-
-# ---------------------------------------------------------------------------
-# Full graph
-# ---------------------------------------------------------------------------
-
-
-class TestGraph:
-    def test_graph_returns_nodes_and_edges(self):
-        resp = requests.get(f"{BASE}/api/graph", timeout=10)
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "nodes" in data
-        assert "edges" in data
-        assert isinstance(data["nodes"], list)
-        assert isinstance(data["edges"], list)
-
-    def test_graph_reflects_newly_created_data(self):
-        person = _create_entity("person", "Graph Person")
-        place = _create_entity("place", "Graph Place")
-        conn = _create_connection(person["id"], place["id"], "LIVES_IN")
-
-        resp = requests.get(f"{BASE}/api/graph", timeout=10)
-        data = resp.json()
-        node_ids = [n["id"] for n in data["nodes"]]
-        edge_ids = [e["id"] for e in data["edges"]]
-        assert person["id"] in node_ids
-        assert place["id"] in node_ids
-        assert conn["id"] in edge_ids
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +65,7 @@ class TestEgoNetwork:
     def test_direct_neighbour_at_depth_1(self):
         person = _create_entity("person", "Net Person")
         place = _create_entity("place", "Net Place")
-        _create_connection(person["id"], place["id"], "LIVES_IN")
+        _create_connection(person["id"], place["id"], "LOCATED_IN")
 
         resp = requests.get(
             f"{BASE}/api/entities/{person['id']}/network?depth=1", timeout=10
@@ -131,9 +109,9 @@ class TestEgoNetwork:
 
     def test_bidirectional_traversal(self):
         """If B→A, requesting A's network should still return B."""
-        a = _create_entity("person", "BidirA")
+        a = _create_entity("organization", "BidirA")
         b = _create_entity("person", "BidirB")
-        _create_connection(b["id"], a["id"], "KNOWS")  # connection goes B → A
+        _create_connection(b["id"], a["id"], "MEMBER_OF")  # connection goes B → A
 
         resp = requests.get(
             f"{BASE}/api/entities/{a['id']}/network?depth=1", timeout=10
@@ -145,7 +123,7 @@ class TestEgoNetwork:
         """All edge source/target IDs must refer to nodes in the response."""
         p = _create_entity("person", "Edge Person")
         pl = _create_entity("place", "Edge Place")
-        _create_connection(p["id"], pl["id"], "LIVES_IN")
+        _create_connection(p["id"], pl["id"], "LOCATED_IN")
 
         resp = requests.get(
             f"{BASE}/api/entities/{p['id']}/network?depth=2", timeout=10

@@ -253,6 +253,7 @@ export default function NetworkExplorer({
                       className="text-[8px] fill-slate-400 font-semibold select-none pointer-events-none"
                     >
                       {RELATION_NAMES[edge.label] || edge.label}
+                      {(edge.start_time || edge.end_time) && ` (${edge.start_time ? new Date(edge.start_time).toLocaleDateString() : '?'} – ${edge.end_time ? new Date(edge.end_time).toLocaleDateString() : 'Present'})`}
                     </text>
                   </g>
                 );
@@ -347,7 +348,7 @@ export default function NetworkExplorer({
             {entities.length > 0 && (
               <button
                 onClick={() => setFocusEntityId(entities[0].id)}
-                className="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-xs rounded-xl shadow-sm cursor-pointer"
+                className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs rounded-xl shadow-sm cursor-pointer"
               >
                 Start Explorer with {entities[0].name}
               </button>

@@ -13,9 +13,7 @@ async def test_network_graph_traversal_empty(client: AsyncClient):
 
 
 async def test_get_entity_network_empty_and_valid(client: AsyncClient):
-    e1 = (
-        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
-    ).json()
+    e1 = (await client.post("/api/persons", json={"name": "Alice"})).json()
 
     # Ego network for entity with no connections
     resp = await client.get(f"/api/entities/{e1['id']}/network?depth=1")
@@ -28,17 +26,9 @@ async def test_get_entity_network_empty_and_valid(client: AsyncClient):
 
 async def test_ego_network_multidegree(client: AsyncClient):
     # Setup chain: Person A -> Org B -> Place C
-    e1 = (
-        await client.post("/api/entities", json={"name": "Alice", "type": "person"})
-    ).json()
-    e2 = (
-        await client.post(
-            "/api/entities", json={"name": "Org X", "type": "organization"}
-        )
-    ).json()
-    e3 = (
-        await client.post("/api/entities", json={"name": "Location Y", "type": "place"})
-    ).json()
+    e1 = (await client.post("/api/persons", json={"name": "Alice"})).json()
+    e2 = (await client.post("/api/organizations", json={"name": "Org X"})).json()
+    e3 = (await client.post("/api/places", json={"name": "Location Y"})).json()
 
     await client.post(
         "/api/connections",
@@ -68,16 +58,16 @@ async def test_ego_network_multidegree(client: AsyncClient):
 async def test_bidirectional_network_traversal(client: AsyncClient):
     """Network traversal must find nodes connected to the anchor in any direction."""
     # A -- B: B is only reachable because connection target → A is bidirectional
-    a = (
-        await client.post("/api/entities", json={"name": "A", "type": "person"})
-    ).json()
-    b = (
-        await client.post("/api/entities", json={"name": "B", "type": "person"})
-    ).json()
+    a = (await client.post("/api/organizations", json={"name": "A"})).json()
+    b = (await client.post("/api/persons", json={"name": "B"})).json()
 
     await client.post(
         "/api/connections",
-        json={"source_id": b["id"], "target_id": a["id"], "label": "KNOWS"},  # B → A
+        json={
+            "source_id": b["id"],
+            "target_id": a["id"],
+            "label": "MEMBER_OF",
+        },  # B → A
     )
 
     # Ask for A's network at depth=1; should still find B (it's connected TO A)
@@ -89,27 +79,25 @@ async def test_bidirectional_network_traversal(client: AsyncClient):
 
 async def test_connections_and_graph(client: AsyncClient):
     # 1. Create source entity (Person)
-    person_payload = {"name": "John Builder", "type": "person", "properties": {}}
-    person_resp = await client.post("/api/entities", json=person_payload)
+    person_resp = await client.post("/api/persons", json={"name": "John Builder"})
     person_id = person_resp.json()["id"]
 
-    # 2. Create target entity (Place)
-    place_payload = {"name": "Capital City", "type": "place", "properties": {}}
-    place_resp = await client.post("/api/entities", json=place_payload)
-    place_id = place_resp.json()["id"]
+    # 2. Create target entity (Organization)
+    org_resp = await client.post("/api/organizations", json={"name": "Capital Org"})
+    org_id = org_resp.json()["id"]
 
     # 3. Create connection
     conn_payload = {
         "source_id": person_id,
-        "target_id": place_id,
-        "label": "LIVES_IN",
+        "target_id": org_id,
+        "label": "MEMBER_OF",
         "description": "Moved there in 2020",
         "properties": {},
     }
     conn_resp = await client.post("/api/connections", json=conn_payload)
     assert conn_resp.status_code == 200
     conn_data = conn_resp.json()
-    assert conn_data["label"] == "LIVES_IN"
+    assert conn_data["label"] == "MEMBER_OF"
 
     # 4. Fetch Ego Network
     network_resp = await client.get(f"/api/entities/{person_id}/network?depth=1")
@@ -117,31 +105,3 @@ async def test_connections_and_graph(client: AsyncClient):
     network_data = network_resp.json()
     assert len(network_data["nodes"]) == 2
     assert len(network_data["edges"]) == 1
-
-
-async def test_get_full_graph(client: AsyncClient):
-    resp = await client.get("/api/graph")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "nodes" in data
-    assert "edges" in data
-
-
-async def test_full_graph_with_data(client: AsyncClient):
-    """GET /api/graph returns nodes and edges when data exists."""
-    p = (
-        await client.post("/api/entities", json={"name": "P", "type": "person"})
-    ).json()
-    pl = (
-        await client.post("/api/entities", json={"name": "PL", "type": "place"})
-    ).json()
-    await client.post(
-        "/api/connections",
-        json={"source_id": p["id"], "target_id": pl["id"], "label": "LIVES_IN"},
-    )
-
-    resp = await client.get("/api/graph")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert len(data["nodes"]) == 2
-    assert len(data["edges"]) == 1

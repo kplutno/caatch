@@ -11,11 +11,12 @@ const ENTITIES = [
 
 const CONNECTION_RULES = {
   person: {
-    KNOWS: ['person'],
-    LIVES_IN: ['place'],
+    ATTENDED: ['event'],
     MEMBER_OF: ['organization'],
   },
-  place: {},
+  place: {
+    LOCATED_IN: ['place'],
+  },
   organization: {},
 };
 
@@ -29,7 +30,7 @@ describe('LinkEntitiesForm', () => {
       />
     );
     expect(screen.getByText('Link Entities')).toBeInTheDocument();
-    expect(screen.getByText('-- Choose Origin --')).toBeInTheDocument();
+    expect(screen.getByText('Choose Origin')).toBeInTheDocument();
   });
 
   it('renders all entities as source options', () => {
@@ -58,9 +59,8 @@ describe('LinkEntitiesForm', () => {
     const [sourceSelect] = screen.getAllByRole('combobox');
     await user.selectOptions(sourceSelect, '1'); // Alice (person)
 
-    // All three person labels should appear in the relation select
-    expect(screen.getByText('Knows')).toBeInTheDocument();
-    expect(screen.getByText('Lives In')).toBeInTheDocument();
+    // The person labels should appear in the relation select
+    expect(screen.getByText('Attended')).toBeInTheDocument();
     expect(screen.getByText('Member Of')).toBeInTheDocument();
   });
 
@@ -76,12 +76,12 @@ describe('LinkEntitiesForm', () => {
 
     const [sourceSelect, relationSelect, targetSelect] = screen.getAllByRole('combobox');
     await user.selectOptions(sourceSelect, '1'); // Alice (person)
-    await user.selectOptions(relationSelect, 'LIVES_IN');
+    await user.selectOptions(relationSelect, 'MEMBER_OF');
 
-    // Only place entities should be available as targets
+    // Only organization entities should be available as targets
     const targetWithin = within(targetSelect);
-    expect(targetWithin.getByText('UN HQ (place)')).toBeInTheDocument();
-    expect(targetWithin.queryByText('NATO (organization)')).not.toBeInTheDocument();
+    expect(targetWithin.getByText('NATO (organization)')).toBeInTheDocument();
+    expect(targetWithin.queryByText('UN HQ (place)')).not.toBeInTheDocument();
   });
 
   it('excludes the source entity from target options', async () => {
@@ -95,13 +95,13 @@ describe('LinkEntitiesForm', () => {
     );
 
     const [sourceSelect, relationSelect] = screen.getAllByRole('combobox');
-    await user.selectOptions(sourceSelect, '1'); // Alice (person)
-    await user.selectOptions(relationSelect, 'KNOWS');
+    await user.selectOptions(sourceSelect, '2'); // UN HQ (place)
+    await user.selectOptions(relationSelect, 'LOCATED_IN');
 
-    // Alice should not appear as a target option for herself
+    // UN HQ should not appear as a target option for itself
     const targetSelect = screen.getAllByRole('combobox')[2];
     const targetOptions = Array.from(targetSelect.options).map((o) => o.value);
-    expect(targetOptions).not.toContain('1');
+    expect(targetOptions).not.toContain('2');
   });
 
   it('calls onCreateConnection with the correct payload on valid submit', async () => {
