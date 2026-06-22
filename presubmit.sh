@@ -153,7 +153,7 @@ if $RUN_INTEGRATION; then
   INTEG_TAG="local-$(date +%Y%m%d-%H%M%S)"
 
   step "Building & deploying to local Kind cluster (tag: $INTEG_TAG)"
-  if (cd "$REPO_ROOT" && chmod +x deploy.sh && ./deploy.sh dev "$INTEG_TAG"); then
+  if (cd "$REPO_ROOT" && chmod +x deploy.sh && CI=1 ./deploy.sh dev "$INTEG_TAG"); then
     ok "deploy.sh dev"
   else
     fail "deploy.sh dev"
@@ -171,6 +171,8 @@ if $RUN_INTEGRATION; then
   fi
 
   step "Starting port-forwarding"
+  pgrep -f "port-forward svc/caatch-backend"  | xargs kill -9 2>/dev/null || true
+  pgrep -f "port-forward svc/caatch-frontend" | xargs kill -9 2>/dev/null || true
   nohup kubectl port-forward svc/caatch-backend  8000:8000 --address 0.0.0.0 >/dev/null 2>&1 &
   nohup kubectl port-forward svc/caatch-frontend 3000:3000 --address 0.0.0.0 >/dev/null 2>&1 &
   ok "port-forwarding started"
